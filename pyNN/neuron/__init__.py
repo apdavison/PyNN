@@ -22,6 +22,7 @@ from .connectors import *                                           # noqa: F403
 from .standardmodels.synapses import *                              # noqa: F403, F401
 from .standardmodels.electrodes import *                            # noqa: F403, F401
 from .standardmodels.receptors import *                             # noqa: F403, F401
+from .standardmodels.ion_channels import *                          # noqa: F403, F401
 from .populations import Population, PopulationView, Assembly       # noqa: F401
 from .projections import Projection                                 # noqa: F401
 from .cells import NativeCellType, IntFire1, IntFire2, IntFire4     # noqa: F401

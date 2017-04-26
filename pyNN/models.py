@@ -89,6 +89,11 @@ class BasePostSynapticResponse(BaseModelType):
     pass
 
 
+class BaseIonChannelModel(BaseModelType):
+    """Base class for ion channel models."""
+    pass
+
+
 class BaseCurrentSource(BaseModelType):
     """Base class for current source model classes."""
     pass

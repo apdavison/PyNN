@@ -18,7 +18,7 @@ import numpy as np
 from .. import random, recording, errors, standardmodels, core, space, descriptions
 from ..models import BaseCellType
 from ..parameters import ParameterSpace, LazyArray, simplify as simplify_parameter_array
-from ..recording import files
+from ..recording import files, Variable
 
 
 deprecated = core.deprecated
@@ -418,7 +418,7 @@ class BasePopulation(object):
         Returns units of the specified variable or parameter, as a string.
         Works for all the recordable variables and neuron parameters of all standard models.
         """
-        return self.celltype.units[variable]
+        return self.celltype.units[variable.name]
 
     def annotate(self, **annotations):
         self.annotations.update(annotations)
@@ -431,7 +431,24 @@ class BasePopulation(object):
     def injectable(self):
         return self.celltype.injectable
 
-    def record(self, variables, to_file=None, sampling_interval=None):
+    def _resolve_variables(self, variables, sections):
+        resolved_variables = []
+        if sections is None:
+            for var_path in variables:
+                if "." in var_path:
+                    parts = var_path.split(".")
+                    section = parts[0]
+                    var_name = ".".join(parts[1:])
+                    resolved_variables.append(Variable(section=section, name=var_name))
+                else:
+                    resolved_variables.append(Variable(None, var_path))
+        else:
+            for section in sections:
+                for var_name in variables:
+                    resolved_variables.append(Variable(section=section, name=var_name))
+        return resolved_variables
+
+    def record(self, variables, to_file=None, sampling_interval=None, sections=None):
         """
         Record the specified variable or variables for all cells in the
         Population or view.
@@ -451,6 +468,7 @@ class BasePopulation(object):
             # recording will be reset for the entire population, not just the view
             self.recorder.reset()
         else:
+            variables = self._resolve_variables(variables, sections)
             logger.debug("%s.record('%s')", self.label, variables)
             if self._record_filter is None:
                 self.recorder.record(variables, self.all_cells, sampling_interval)

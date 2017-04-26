@@ -14,7 +14,7 @@ import logging
 from datetime import datetime
 import os
 from copy import copy
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from warnings import warn
 
 import numpy as np
@@ -27,6 +27,8 @@ from .. import errors
 logger = logging.getLogger("PyNN")
 
 MPI_ROOT = 0
+
+Variable = namedtuple('Variable', ['section', 'name'])
 
 
 def get_mpi_comm():
@@ -345,7 +347,7 @@ class Recorder(object):
                                     signal_array[:, i],
                                     units=units,
                                     time_units=pq.ms,
-                                    name=variable,
+                                    name="{}.{}".format(variable.section, variable.name),
                                     source_ids=[source_id],
                                     source_population=self.population.label,
                                     array_annotations={"channel_index": [i]}
@@ -358,7 +360,8 @@ class Recorder(object):
                             signals = [
                                 neo.IrregularlySampledSignal(
                                     times_array, signal_array, units=units, time_units=pq.ms,
-                                    name=variable, source_ids=source_ids,
+                                    name="{}.{}".format(variable.section, variable.name),
+                                    source_ids=source_ids,
                                     source_population=self.population.label,
                                     array_annotations={"channel_index": channel_index}
                                 )
@@ -376,7 +379,8 @@ class Recorder(object):
                             units=units,
                             t_start=t_start,
                             sampling_period=sampling_period,
-                            name=variable, source_ids=source_ids,
+                            name="{}.{}".format(variable.section, variable.name),
+                                                  source_ids=source_ids,
                             source_population=self.population.label,
                             array_annotations={"channel_index": channel_index}
                         )
