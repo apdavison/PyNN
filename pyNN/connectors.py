@@ -232,7 +232,9 @@ class MapConnector(Connector):
                 if local:
                     # Connect the neurons
                     projection._convergent_connect(
-                        source_mask, postsynaptic_index, **connection_parameters)
+                        source_mask, postsynaptic_index,
+                        location_selector=self.location_selector,
+                        **connection_parameters)
                     if self.callback:
                         self.callback(count / projection.post.local_size)
 
@@ -295,14 +297,16 @@ class AllToAllConnector(MapConnector):
     """
     parameter_names = ('allow_self_connections',)
 
-    def __init__(self, allow_self_connections=True, safe=True,
-                 callback=None):
+    def __init__(self, allow_self_connections=True,
+                 location_selector=None,
+                 safe=True, callback=None):
         """
         Create a new connector.
         """
         Connector.__init__(self, safe, callback)
         assert isinstance(allow_self_connections, bool)
         self.allow_self_connections = allow_self_connections
+        self.location_selector = location_selector
 
     def connect(self, projection):
         if not self.allow_self_connections:

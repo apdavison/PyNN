@@ -22,6 +22,7 @@ import neo
 import quantities as pq
 
 from .. import errors
+from ..morphology import MorphologyFilter
 
 
 logger = logging.getLogger("PyNN")
