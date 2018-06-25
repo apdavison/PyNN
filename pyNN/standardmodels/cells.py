@@ -35,6 +35,7 @@ import operator
 from functools import reduce
 
 from ..parameters import ArrayParameter, Sequence
+from ..morphology import uniform
 from .base import StandardCellType, StandardCellTypeComponent
 
 
@@ -929,11 +930,13 @@ class HasSections(type):
         return value
 
 
-class MultiCompartmentNeuron(StandardCellType, metaclass=HasSections):
+class MultiCompartmentNeuron(with_metaclass(HasSections, StandardCellType)):
+#class MultiCompartmentNeuron(StandardCellType, metaclass=HasSections):
     default_parameters = {
         "morphology": None,
-        "cm": 1.0,
-        "Ra": 35.4
+        "cm": uniform('all', 1.0),
+        "Ra": 35.4,
+        "ionic_species": None
     }
     recordable = ['spikes']
     injectable = True

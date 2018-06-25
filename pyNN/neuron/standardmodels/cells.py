@@ -19,7 +19,7 @@ from pyNN.neuron.cells import (StandardIFStandardReceptors, SingleCompartmentTra
                                BretteGerstnerIF,
                                BretteGerstnerIFStandardReceptors, GsfaGrrIF, Izhikevich_,
                                GIFNeuron, NeuronTemplate)
-from pyNN.morphology import Morphology
+from pyNN.morphology import Morphology, NeuriteDistribution
 import logging
 from neuron import nrn, h
 
@@ -392,7 +392,8 @@ class MultiCompartmentNeuron(base_cells.MultiCompartmentNeuron):
     translations = build_translations(
         ('Ra', 'Ra'),
         ('cm', 'cm'),
-        ('morphology', 'morphology')
+        ('morphology', 'morphology'),
+        ('ionic_species', 'ionic_species')
     )
     default_initial_values = {}
     ion_channels = {}
@@ -417,8 +418,9 @@ class MultiCompartmentNeuron(base_cells.MultiCompartmentNeuron):
     def get_schema(self):
         schema = {
             "morphology": Morphology,
-            "cm": float,
-            "Ra": float
+            "cm": NeuriteDistribution,
+            "Ra": float,
+            "ionic_species": dict
         }
         #for name, ion_channel in self.ion_channels.items():
         #    schema[name] = ion_channel.get_schema()
@@ -429,7 +431,7 @@ class MultiCompartmentNeuron(base_cells.MultiCompartmentNeuron):
         return {}
 
     @property
-    def segment_names(self):
+    def segment_names(self):  # rename to section_names?
         return [seg.name for seg in self.morphology.segments]
 
     #def __getattr__(self, item):
