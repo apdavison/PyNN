@@ -288,7 +288,7 @@ class Recorder(recording.Recorder):
             return np.array([]), times
 
     def _local_count(self, variable, filter_ids):
-        assert variable == 'spikes'
+        assert variable.name == 'spikes'
         return self._spike_detector.get_spike_counts(self.filter_recorded(recording.Variable('spikes', None), filter_ids))
 
     def _clear_simulator(self):
