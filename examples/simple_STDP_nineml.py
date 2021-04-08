@@ -59,7 +59,7 @@ sim, options = get_simulator(("--plot-figure", "Plot the simulation results to a
                               {"action": "store_true"}),
                              ("--fit-curve", "Calculate the best-fit curve to the weight-delta_t measurements",
                               {"action": "store_true"}),
-                             ("--dendritic-delay-fraction", 
+                             ("--dendritic-delay-fraction",
                               "What fraction of the total transmission delay is due to dendritic propagation",
                               {"default": 1}),
                              ("--debug", "Print debugging information"))

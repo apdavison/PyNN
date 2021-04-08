@@ -45,6 +45,12 @@ from pyNN.standardmodels import StandardCellType
 from pyNN.nest.populations import Population, PopulationView, Assembly
 from pyNN.nest.projections import Projection
 
+#try:
+#    from . import nineml
+#except ImportError:
+#    pass  # nineml is an optional dependency
+from .nineml import nineml_celltype_from_model, nineml_synapse_type
+
 logger = logging.getLogger("PyNN")
 if logger.level == logging.NOTSET:
     logger.setLevel(logging.ERROR)
