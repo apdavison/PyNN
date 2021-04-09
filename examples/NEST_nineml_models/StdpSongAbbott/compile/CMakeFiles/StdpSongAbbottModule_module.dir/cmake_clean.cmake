@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/StdpSongAbbottModule_module.dir/StdpSongAbbottModule.cpp.o"
   "CMakeFiles/StdpSongAbbottModule_module.dir/StdpSongAbbott.cpp.o"
+  "CMakeFiles/StdpSongAbbottModule_module.dir/StdpSongAbbottModule.cpp.o"
   "StdpSongAbbottModule.pdb"
   "StdpSongAbbottModule.so"
 )
