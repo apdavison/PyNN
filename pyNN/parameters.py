@@ -1,7 +1,7 @@
 """
 Parameter set handling
 
-:copyright: Copyright 2006-2016 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2020 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 """
 
@@ -17,6 +17,7 @@ from pyNN.core import is_listlike
 from pyNN import errors
 from pyNN.random import RandomDistribution, NativeRNG
 from lazyarray import larray, partial_shape
+import numpy as np
 
 
 class LazyArray(larray):
@@ -239,7 +240,6 @@ class ParameterSpace(object):
 
     .. _`lazy array`: https://lazyarray.readthedocs.org/
     """
-
     def __init__(self, parameters, schema=None, shape=None, component=None):
         """
 
