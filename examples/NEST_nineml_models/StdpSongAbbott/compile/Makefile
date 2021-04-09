@@ -67,10 +67,10 @@ RM = /home/pedroernesto/anaconda3/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/_PyNN-branch-0.9.6_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src
+CMAKE_SOURCE_DIR = /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/_PyNN-branch-0.9.6_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile
+CMAKE_BINARY_DIR = /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -157,7 +157,7 @@ package/fast: package
 # Special rule for the target package_source
 package_source:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool for source..."
-	/home/pedroernesto/anaconda3/bin/cpack --config ./CPackSourceConfig.cmake /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/_PyNN-branch-0.9.6_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile/CPackSourceConfig.cmake
+	/home/pedroernesto/anaconda3/bin/cpack --config ./CPackSourceConfig.cmake /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile/CPackSourceConfig.cmake
 .PHONY : package_source
 
 # Special rule for the target package_source
@@ -167,9 +167,9 @@ package_source/fast: package_source
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/_PyNN-branch-0.9.6_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile/CMakeFiles /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/_PyNN-branch-0.9.6_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile/CMakeFiles /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/_PyNN-branch-0.9.6_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -198,6 +198,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named StdpSongAbbottmodule_module
+
+# Build rule for target.
+StdpSongAbbottmodule_module: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 StdpSongAbbottmodule_module
+.PHONY : StdpSongAbbottmodule_module
+
+# fast build rule for target.
+StdpSongAbbottmodule_module/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_module.dir/build.make CMakeFiles/StdpSongAbbottmodule_module.dir/build
+.PHONY : StdpSongAbbottmodule_module/fast
+
+#=============================================================================
 # Target rules for targets named generate_help
 
 # Build rule for target.
@@ -224,30 +237,17 @@ dist/fast:
 .PHONY : dist/fast
 
 #=============================================================================
-# Target rules for targets named StdpSongAbbottModule_module
+# Target rules for targets named StdpSongAbbottmodule_lib
 
 # Build rule for target.
-StdpSongAbbottModule_module: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 StdpSongAbbottModule_module
-.PHONY : StdpSongAbbottModule_module
+StdpSongAbbottmodule_lib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 StdpSongAbbottmodule_lib
+.PHONY : StdpSongAbbottmodule_lib
 
 # fast build rule for target.
-StdpSongAbbottModule_module/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_module.dir/build.make CMakeFiles/StdpSongAbbottModule_module.dir/build
-.PHONY : StdpSongAbbottModule_module/fast
-
-#=============================================================================
-# Target rules for targets named StdpSongAbbottModule_lib
-
-# Build rule for target.
-StdpSongAbbottModule_lib: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 StdpSongAbbottModule_lib
-.PHONY : StdpSongAbbottModule_lib
-
-# fast build rule for target.
-StdpSongAbbottModule_lib/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_lib.dir/build.make CMakeFiles/StdpSongAbbottModule_lib.dir/build
-.PHONY : StdpSongAbbottModule_lib/fast
+StdpSongAbbottmodule_lib/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_lib.dir/build.make CMakeFiles/StdpSongAbbottmodule_lib.dir/build
+.PHONY : StdpSongAbbottmodule_lib/fast
 
 StdpSongAbbott.o: StdpSongAbbott.cpp.o
 
@@ -255,8 +255,8 @@ StdpSongAbbott.o: StdpSongAbbott.cpp.o
 
 # target to build an object file
 StdpSongAbbott.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_module.dir/build.make CMakeFiles/StdpSongAbbottModule_module.dir/StdpSongAbbott.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_lib.dir/build.make CMakeFiles/StdpSongAbbottModule_lib.dir/StdpSongAbbott.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_module.dir/build.make CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbott.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_lib.dir/build.make CMakeFiles/StdpSongAbbottmodule_lib.dir/StdpSongAbbott.cpp.o
 .PHONY : StdpSongAbbott.cpp.o
 
 StdpSongAbbott.i: StdpSongAbbott.cpp.i
@@ -265,8 +265,8 @@ StdpSongAbbott.i: StdpSongAbbott.cpp.i
 
 # target to preprocess a source file
 StdpSongAbbott.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_module.dir/build.make CMakeFiles/StdpSongAbbottModule_module.dir/StdpSongAbbott.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_lib.dir/build.make CMakeFiles/StdpSongAbbottModule_lib.dir/StdpSongAbbott.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_module.dir/build.make CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbott.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_lib.dir/build.make CMakeFiles/StdpSongAbbottmodule_lib.dir/StdpSongAbbott.cpp.i
 .PHONY : StdpSongAbbott.cpp.i
 
 StdpSongAbbott.s: StdpSongAbbott.cpp.s
@@ -275,39 +275,39 @@ StdpSongAbbott.s: StdpSongAbbott.cpp.s
 
 # target to generate assembly for a file
 StdpSongAbbott.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_module.dir/build.make CMakeFiles/StdpSongAbbottModule_module.dir/StdpSongAbbott.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_lib.dir/build.make CMakeFiles/StdpSongAbbottModule_lib.dir/StdpSongAbbott.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_module.dir/build.make CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbott.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_lib.dir/build.make CMakeFiles/StdpSongAbbottmodule_lib.dir/StdpSongAbbott.cpp.s
 .PHONY : StdpSongAbbott.cpp.s
 
-StdpSongAbbottModule.o: StdpSongAbbottModule.cpp.o
+StdpSongAbbottmodule.o: StdpSongAbbottmodule.cpp.o
 
-.PHONY : StdpSongAbbottModule.o
+.PHONY : StdpSongAbbottmodule.o
 
 # target to build an object file
-StdpSongAbbottModule.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_module.dir/build.make CMakeFiles/StdpSongAbbottModule_module.dir/StdpSongAbbottModule.cpp.o
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_lib.dir/build.make CMakeFiles/StdpSongAbbottModule_lib.dir/StdpSongAbbottModule.cpp.o
-.PHONY : StdpSongAbbottModule.cpp.o
+StdpSongAbbottmodule.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_module.dir/build.make CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbottmodule.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_lib.dir/build.make CMakeFiles/StdpSongAbbottmodule_lib.dir/StdpSongAbbottmodule.cpp.o
+.PHONY : StdpSongAbbottmodule.cpp.o
 
-StdpSongAbbottModule.i: StdpSongAbbottModule.cpp.i
+StdpSongAbbottmodule.i: StdpSongAbbottmodule.cpp.i
 
-.PHONY : StdpSongAbbottModule.i
+.PHONY : StdpSongAbbottmodule.i
 
 # target to preprocess a source file
-StdpSongAbbottModule.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_module.dir/build.make CMakeFiles/StdpSongAbbottModule_module.dir/StdpSongAbbottModule.cpp.i
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_lib.dir/build.make CMakeFiles/StdpSongAbbottModule_lib.dir/StdpSongAbbottModule.cpp.i
-.PHONY : StdpSongAbbottModule.cpp.i
+StdpSongAbbottmodule.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_module.dir/build.make CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbottmodule.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_lib.dir/build.make CMakeFiles/StdpSongAbbottmodule_lib.dir/StdpSongAbbottmodule.cpp.i
+.PHONY : StdpSongAbbottmodule.cpp.i
 
-StdpSongAbbottModule.s: StdpSongAbbottModule.cpp.s
+StdpSongAbbottmodule.s: StdpSongAbbottmodule.cpp.s
 
-.PHONY : StdpSongAbbottModule.s
+.PHONY : StdpSongAbbottmodule.s
 
 # target to generate assembly for a file
-StdpSongAbbottModule.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_module.dir/build.make CMakeFiles/StdpSongAbbottModule_module.dir/StdpSongAbbottModule.cpp.s
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottModule_lib.dir/build.make CMakeFiles/StdpSongAbbottModule_lib.dir/StdpSongAbbottModule.cpp.s
-.PHONY : StdpSongAbbottModule.cpp.s
+StdpSongAbbottmodule.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_module.dir/build.make CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbottmodule.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/StdpSongAbbottmodule_lib.dir/build.make CMakeFiles/StdpSongAbbottmodule_lib.dir/StdpSongAbbottmodule.cpp.s
+.PHONY : StdpSongAbbottmodule.cpp.s
 
 # Help Target
 help:
@@ -325,14 +325,14 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... dist"
 	@echo "... generate_help"
-	@echo "... StdpSongAbbottModule_lib"
-	@echo "... StdpSongAbbottModule_module"
+	@echo "... StdpSongAbbottmodule_lib"
+	@echo "... StdpSongAbbottmodule_module"
 	@echo "... StdpSongAbbott.o"
 	@echo "... StdpSongAbbott.i"
 	@echo "... StdpSongAbbott.s"
-	@echo "... StdpSongAbbottModule.o"
-	@echo "... StdpSongAbbottModule.i"
-	@echo "... StdpSongAbbottModule.s"
+	@echo "... StdpSongAbbottmodule.o"
+	@echo "... StdpSongAbbottmodule.i"
+	@echo "... StdpSongAbbottmodule.s"
 .PHONY : help
 
 

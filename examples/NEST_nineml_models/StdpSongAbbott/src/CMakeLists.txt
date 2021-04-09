@@ -35,11 +35,11 @@ cmake_minimum_required( VERSION 2.8.12 )
 set( SHORT_NAME StdpSongAbbott )
 
 #    the complete module name is here:
-set( MODULE_NAME StdpSongAbbottModule )
+set( MODULE_NAME StdpSongAbbottmodule )
 
 # 2) Add all your sources here
 set( MODULE_SOURCES
-    StdpSongAbbottModule.h StdpSongAbbottModule.cpp
+    StdpSongAbbottmodule.h StdpSongAbbottmodule.cpp
     StdpSongAbbott.h StdpSongAbbott.cpp
     )
 
