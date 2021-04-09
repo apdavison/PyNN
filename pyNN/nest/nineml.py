@@ -14,7 +14,7 @@ Functions:
 Constants:
     NEST_DIR        - subdirectory to which NEST mechanisms will be written (TODO: not implemented)
 
-:copyright: Copyright 2006-2016 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2020 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 
 """
@@ -34,8 +34,8 @@ logger = logging.getLogger("PyNN")
 # TODO: This should go to a evironment variable, like PYNN_9ML_DIR
 # and then a sub-dir for nest, neuron, etc.
 # but default to ~/.pyNN or something to that regard.
+# NEST_DIR = "nest_models"
 NEST_DIR = os.path.join(os.getcwd(), "NEST_nineml_models")
-
 
 class NineMLCellType(NativeCellType):
 
