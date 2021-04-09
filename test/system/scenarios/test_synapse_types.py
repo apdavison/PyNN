@@ -11,7 +11,7 @@ from nose.tools import assert_equal, assert_less, assert_greater, assert_not_equ
 from .registry import register
 
 
-@register(exclude=['moose', 'nemo', 'brian'])
+@register(exclude=['moose', 'nemo', 'brian', 'brian2'])
 def test_simple_stochastic_synapse(sim, plot_figure=False):
     # in this test we connect
     sim.setup(min_delay=0.5)
@@ -44,7 +44,10 @@ def test_simple_stochastic_synapse(sim, plot_figure=False):
     assert_less(crossings[1].size, 0.6*spike_times.size)
     assert_greater(crossings[1].size, 0.4*spike_times.size)
     assert_equal(crossings[3].size, spike_times.size)
-    assert_not_equal(crossings[1], crossings[2])
+    try:
+        assert_not_equal(crossings[1], crossings[2])
+    except ValueError:
+        assert not (crossings[1] == crossings[2]).all()
     print(crossings[1].size / spike_times.size)
     return data
 

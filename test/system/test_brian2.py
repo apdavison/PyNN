@@ -1,30 +1,30 @@
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_equal
 import numpy
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_equal
 from .scenarios.registry import registry
 
 try:
-    import pyNN.brian
-    have_brian = True
+    import pyNN.brian2
+    have_brian2 = True
 except ImportError:
-    have_brian = False
+    have_brian2 = False
 
 
 def test_scenarios():
     for scenario in registry:
-        if "brian" not in scenario.exclude:
-            scenario.description = "{}(brian)".format(scenario.__name__)
-            if have_brian:
-                yield scenario, pyNN.brian
+        if "brian2" not in scenario.exclude:
+            scenario.description = "{}(brian2)".format(scenario.__name__)
+            if have_brian2:
+                yield scenario, pyNN.brian2
             else:
                 raise SkipTest
 
 
 def test_ticket235():
-    if not have_brian:
+    if not have_brian2:
         raise SkipTest
-    pynnn = pyNN.brian
+    pynnn = pyNN.brian2
     pynnn.setup()
     p1 = pynnn.Population(9, pynnn.IF_curr_alpha(), structure=pynnn.space.Grid2D())
     p2 = pynnn.Population(9, pynnn.IF_curr_alpha(), structure=pynnn.space.Grid2D())
@@ -44,7 +44,7 @@ def test_ticket235():
     for n in n_spikes_p2.values():
         assert_equal(n, n_spikes_p2[p2[1]])
     # With this new setup, only the second p2 unit should fire:
-    #prj1_2.set(weight=[0, 20, 0, 0, 0, 0, 0, 0, 0])
+    # prj1_2.set(weight=[0, 20, 0, 0, 0, 0, 0, 0, 0])
     new_weights = numpy.where(numpy.eye(9), 0, numpy.nan)
     new_weights[1, 1] = 20.0
     prj1_2.set(weight=new_weights)
@@ -61,9 +61,9 @@ def test_ticket235():
 
 
 def test_tsodyks_markram_synapse():
-    if not have_brian:
+    if not have_brian2:
         raise SkipTest
-    sim = pyNN.brian
+    sim = pyNN.brian2
     sim.setup()
     spike_source = sim.Population(1, sim.SpikeSourceArray(spike_times=numpy.arange(10, 100, 10)))
     neurons = sim.Population(5, sim.IF_cond_exp(e_rev_I=-75, tau_syn_I=numpy.arange(0.2, 0.7, 0.1)))
@@ -76,25 +76,5 @@ def test_tsodyks_markram_synapse():
                          synapse_type=synapse_type)
     neurons.record('gsyn_inh')
     sim.run(100.0)
-    tau_psc = prj._brian_synapses[0][0].tau_syn.data * 1e3  # s --> ms
+    tau_psc = prj._brian2_synapses[0][0].tau_syn_ * 1e3  # s --> ms
     assert_array_equal(tau_psc, numpy.arange(0.2, 0.7, 0.1))
-
-
-def test_issue_634():
-    if not have_brian:
-        raise SkipTest
-    sim = pyNN.brian
-    sim.setup()
-    cells = sim.Population(1, sim.IF_curr_exp(v_thresh=-55.0, tau_refrac=5.0, v_rest=-60.0))
-    dc1_source = sim.DCSource(amplitude=0.5, start=25, stop=50)
-    dc2_source = sim.DCSource(amplitude=-0.5, start=40, stop=80)
-    cells[0].inject(dc1_source)
-    cells[0].inject(dc2_source)
-    dc1_source.record()
-    dc2_source.record()
-    dc1_source._record_old()
-    sim.run(100.0)
-    i_dc1 = dc1_source.get_data()
-    i_dc2 = dc2_source.get_data()
-    i_dc_total_times, i_dc_total = dc1_source._get_data_old()
-    assert_array_almost_equal(numpy.squeeze(i_dc1.magnitude+i_dc2.magnitude), i_dc_total, decimal=6)

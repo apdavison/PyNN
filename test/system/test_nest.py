@@ -1,7 +1,8 @@
 from nose.plugins.skip import SkipTest
 from .scenarios.registry import registry
-from nose.tools import assert_equal, assert_not_equal
+from nose.tools import assert_equal, assert_not_equal, assert_raises
 from pyNN.utility import init_logging, assert_arrays_equal
+from pyNN.random import RandomDistribution
 import numpy
 
 try:
@@ -73,9 +74,8 @@ def test_record_native_model():
 
 
 def test_native_stdp_model():
-    #if not have_nest:
-    if True:
-        raise SkipTest("Causes core dump with NEST master")
+    if not have_nest:
+        raise SkipTest
     nest = pyNN.nest
     from pyNN.utility import init_logging
 
@@ -186,7 +186,7 @@ def test_tsodyks_markram_synapse():
                          synapse_type=synapse_type)
     neurons.record('gsyn_inh')
     sim.run(100.0)
-    connections = nest.GetConnections(prj._sources.tolist(), synapse_model=prj.nest_synapse_model)
+    connections = nest.GetConnections(numpy.unique(prj._sources).tolist(), synapse_model=prj.nest_synapse_model)
     tau_psc = numpy.array(nest.GetStatus(connections, 'tau_psc'))
     assert_arrays_equal(tau_psc, numpy.arange(0.2, 0.7, 0.1))
 
@@ -269,6 +269,62 @@ def test_issue529():
     ee_connector = sim.FromListConnector(connections, column_names=["weight"])
 
     prj_plastic = sim.Projection(p1, p2, ee_connector, receptor_type='excitatory', synapse_type=stdp)
+
+
+def test_issue662a():
+    """Setting tau_minus to a random distribution fails..."""
+    if not have_nest:
+        raise SkipTest
+    import nest
+    sim = pyNN.nest
+
+    sim.setup()
+    p1 = sim.Population(5, sim.SpikeSourcePoisson(rate=100.0))
+    p2 = sim.Population(10, sim.IF_cond_exp())
+
+    syn = sim.STDPMechanism(
+        timing_dependence=sim.SpikePairRule(
+            A_plus = 0.2,
+            A_minus = 0.1,
+            tau_minus = RandomDistribution('uniform', (20,40)),
+            tau_plus = RandomDistribution('uniform', (10,20))
+        ),
+        weight_dependence=sim.AdditiveWeightDependence(w_min=0.0, w_max=0.01)
+    )
+
+    assert_raises(ValueError, sim.Projection, p1, p2, sim.AllToAllConnector(),
+                  synapse_type=syn, receptor_type='excitatory')
+
+
+def test_issue662b():
+    """Setting tau_minus to a random distribution fails..."""
+    if not have_nest:
+        raise SkipTest
+    import nest
+    sim = pyNN.nest
+
+    sim.setup(min_delay=0.5)
+    p1 = sim.Population(5, sim.SpikeSourcePoisson(rate=100.0))
+    p2 = sim.Population(10, sim.IF_cond_exp())
+
+    syn = sim.STDPMechanism(
+        timing_dependence=sim.SpikePairRule(
+            A_plus = 0.2,
+            A_minus = 0.1,
+            tau_minus = 30,
+            tau_plus = RandomDistribution('uniform', (10,20))
+        ),
+        weight_dependence=sim.AdditiveWeightDependence(w_min=0.0, w_max=0.01),
+        weight=0.005
+    )
+
+    connections = sim.Projection(p1, p2, sim.AllToAllConnector(),
+                                 synapse_type=syn,
+                                 receptor_type='inhibitory')
+
+    connections.set(tau_minus=25)  #RandomDistribution('uniform', (20,40)))
+    # todo: check this worked
+    assert_raises(ValueError, connections.set, tau_minus=RandomDistribution('uniform', (20,40)))
 
 
 if __name__ == '__main__':
