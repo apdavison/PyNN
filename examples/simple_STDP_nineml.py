@@ -144,7 +144,7 @@ def create_stdp_synapse():
                 ])])
     return dyn
 
-MySTDP = sim.nineml_synapse_type('StdpSongAbbott', create_stdp_synapse())
+MySTDP = sim.nineml_synapse_type('StdpSongAbbott_latest', create_stdp_synapse())
 
 stdp_model = MySTDP(tauLTP=20.0, tauLTD=20.0,
                     aLTP=0.01, aLTD=0.012,
