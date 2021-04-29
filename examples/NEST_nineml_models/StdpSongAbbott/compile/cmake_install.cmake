@@ -78,11 +78,18 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src/StdpSongAbbottmodule.h")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/StdpSongAbbottmodule" TYPE FILE FILES "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src/StdpSongAbbottmodule.h")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share" TYPE DIRECTORY FILES "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src/sli")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  execute_process(
+         COMMAND /home/pedroernesto/anaconda3/bin/python3 -B generate_help.py "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src" "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile"
+         WORKING_DIRECTORY "/home/pedroernesto/anaconda3/build/NEST/share/nest/help_generator"
+         )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
@@ -94,14 +101,14 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/install/share/doc/StdpSongAbbottmodule" TYPE DIRECTORY FILES "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile/doc/help")
+file(INSTALL DESTINATION "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/install/share/doc/StdpSongAbbottmodule" TYPE DIRECTORY OPTIONAL FILES "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile/doc/help")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   execute_process(
-      COMMAND /home/pedroernesto/anaconda3/envs/PyNN-branch-nineml_pype9-branch-plasticiy-NEST/bin/python -B generate_helpindex.py "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/install/share/doc/StdpSongAbbottmodule"
-      WORKING_DIRECTORY "/home/pedroernesto/anaconda3/build/NEST/share/nest/help_generator"
-    )
+         COMMAND /home/pedroernesto/anaconda3/bin/python3 -B generate_helpindex.py "/home/pedroernesto/anaconda3/build/NEST/share/doc/nest"
+         WORKING_DIRECTORY "/home/pedroernesto/anaconda3/build/NEST/share/nest/help_generator"
+         )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)

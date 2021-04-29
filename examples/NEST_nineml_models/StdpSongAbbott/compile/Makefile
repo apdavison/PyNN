@@ -75,18 +75,6 @@ CMAKE_BINARY_DIR = /home/pedroernesto/Documents/Project/Code/Models_Representati
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target install/local
-install/local: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/home/pedroernesto/anaconda3/lib/python3.7/site-packages/cmake/data/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local
-
-# Special rule for the target install/local
-install/local/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/home/pedroernesto/anaconda3/lib/python3.7/site-packages/cmake/data/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local/fast
-
 # Special rule for the target package
 package: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool..."
@@ -111,8 +99,8 @@ package_source/fast: package_source
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/home/pedroernesto/anaconda3/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/home/pedroernesto/anaconda3/lib/python3.7/site-packages/cmake/data/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -165,6 +153,18 @@ install/fast: preinstall/fast
 	/home/pedroernesto/anaconda3/lib/python3.7/site-packages/cmake/data/bin/cmake -P cmake_install.cmake
 .PHONY : install/fast
 
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/home/pedroernesto/anaconda3/lib/python3.7/site-packages/cmake/data/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/home/pedroernesto/anaconda3/lib/python3.7/site-packages/cmake/data/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
 # The main all target
 all: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile/CMakeFiles /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/compile//CMakeFiles/progress.marks
@@ -198,19 +198,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named dist
-
-# Build rule for target.
-dist: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dist
-.PHONY : dist
-
-# fast build rule for target.
-dist/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/dist.dir/build.make CMakeFiles/dist.dir/build
-.PHONY : dist/fast
-
-#=============================================================================
 # Target rules for targets named StdpSongAbbottmodule_module
 
 # Build rule for target.
@@ -237,17 +224,17 @@ StdpSongAbbottmodule_lib/fast:
 .PHONY : StdpSongAbbottmodule_lib/fast
 
 #=============================================================================
-# Target rules for targets named generate_help
+# Target rules for targets named dist
 
 # Build rule for target.
-generate_help: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 generate_help
-.PHONY : generate_help
+dist: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dist
+.PHONY : dist
 
 # fast build rule for target.
-generate_help/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/generate_help.dir/build.make CMakeFiles/generate_help.dir/build
-.PHONY : generate_help/fast
+dist/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/dist.dir/build.make CMakeFiles/dist.dir/build
+.PHONY : dist/fast
 
 StdpSongAbbott.o: StdpSongAbbott.cpp.o
 
@@ -324,7 +311,6 @@ help:
 	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... dist"
-	@echo "... generate_help"
 	@echo "... StdpSongAbbottmodule_lib"
 	@echo "... StdpSongAbbottmodule_module"
 	@echo "... StdpSongAbbott.o"

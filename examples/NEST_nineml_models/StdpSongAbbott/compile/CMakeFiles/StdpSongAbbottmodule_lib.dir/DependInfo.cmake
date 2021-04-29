@@ -19,6 +19,7 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/simulators-source/NEST_install/nest-simulator-2.20.1/conngen"
   "/home/pedroernesto/anaconda3/build/NEST/include/nest"
+  "/home/pedroernesto/anaconda3/include"
   )
 
 # Targets to which this target links.
