@@ -437,3 +437,4 @@ class Vogels2011Rule(STDPTimingDependence):
         'eta': 1e-10,
         'rho': 3.0
     }
+    

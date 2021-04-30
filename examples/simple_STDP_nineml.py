@@ -145,7 +145,14 @@ def create_stdp_synapse():
     return dyn
 
 MySTDP = sim.nineml_synapse_type('StdpSongAbbott', create_stdp_synapse())
-
+'''
+stdp_model = MySTDP(tau_plus=20.0, tau_minus=20.0,
+                    A_plus=0.01, A_minus=0.012,
+                    w_max=0.0000001, w_min=0,
+                    weight=0.00000005,
+                    delay=delay,
+                    dendritic_delay_fraction=float(options.dendritic_delay_fraction))
+'''
 stdp_model = MySTDP(tauLTP=20.0, tauLTD=20.0,
                     aLTP=0.01, aLTD=0.012,
                     wmin=0, wmax=0.0000001,

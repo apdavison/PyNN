@@ -232,3 +232,26 @@ class SpikePairRule(synapses.SpikePairRule):
 
     )
     possible_models = set(['stdp_synapse']) #,'stdp_synapse_hom'])
+
+class SpikePairRule_(STDPMechanism, synapses.MultiplicativeWeightDependence, synapses.SpikePairRule):
+    __doc__ = synapses.SpikePairRule.__doc__
+
+    translations = build_translations(
+        ('w_max',     'wmax'),
+        ('w_min',     'wmin'),
+        ('tau_plus',  'tauLTP'),
+        ('tau_minus', 'tauLTD'),
+        ('A_plus',    'aLTP'),
+        ('A_minus',   'aLTD'),
+
+    )
+    possible_models = set(['stdp_synapse']) #,'stdp_synapse_hom'])
+
+    def __init__(self, wmin=0.0, wmax=1.0, tauLTP=20.0, tauLTD=20.0, aLTP=0.01, aLTD=0.01, \
+                timing_dependence=None, weight_dependence=None, voltage_dependence=None, \
+                dendritic_delay_fraction=1.0, weight=0.0, delay=None):
+        if wmin != 0:
+            raise Exception("Non-zero minimum weight is not supported by NEST.")
+        super(synapses.MultiplicativeWeightDependence, self).__init__(w_min=wmin, w_max=wmax)
+        super(synapses.SpikePairRule, self).__init__(tau_plus=tauLTP, tau_minus=tauLTD, A_plus=aLTP, A_minus=aLTD)
+        super(STDPMechanism, self).__init__(dendritic_delay_fraction=dendritic_delay_fraction, weight = weight, delay=delay)

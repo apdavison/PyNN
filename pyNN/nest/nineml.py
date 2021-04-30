@@ -26,7 +26,8 @@ from datetime import datetime
 
 from pyNN.nest.cells import NativeCellType
 # from pyNN.models import BaseSynapseType
-from pyNN.nest.synapses import NativeSynapseType
+# from pyNN.nest.synapses import NativeSynapseType
+from pyNN.nest.standardmodels.synapses import SpikePairRule_
 from pyNN.nest.simulator import Connection
 
 logger = logging.getLogger("PyNN")
@@ -142,7 +143,7 @@ class _nest_build_nineml_celltype(type):
         return type.__new__(cls, name, bases, dct)
 
 
-class NineMLSynapseType(NativeSynapseType):
+class NineMLSynapseType(SpikePairRule_):
 
     connection_type = Connection
     presynaptic_type = None
