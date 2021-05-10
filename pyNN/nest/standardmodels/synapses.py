@@ -236,22 +236,40 @@ class SpikePairRule(synapses.SpikePairRule):
 class SpikePairRule_(STDPMechanism, synapses.MultiplicativeWeightDependence, synapses.SpikePairRule):
     __doc__ = synapses.SpikePairRule.__doc__
 
+    '''
     translations = build_translations(
         ('w_max',     'wmax'),
-        ('w_min',     'wmin'),
+        ('w_min',     'w_min_always_zero_in_NEST'),
         ('tau_plus',  'tauLTP'),
         ('tau_minus', 'tauLTD'),
         ('A_plus',    'aLTP'),
         ('A_minus',   'aLTD'),
 
     )
+    '''
     possible_models = set(['stdp_synapse']) #,'stdp_synapse_hom'])
 
-    def __init__(self, wmin=0.0, wmax=1.0, tauLTP=20.0, tauLTD=20.0, aLTP=0.01, aLTD=0.01, \
-                timing_dependence=None, weight_dependence=None, voltage_dependence=None, \
+    def __init__(self, w_min=0.0, w_max=1.0, tau_plus=20.0, tau_minus=20.0, A_plus=0.01, A_minus=0.01, \
                 dendritic_delay_fraction=1.0, weight=0.0, delay=None):
-        if wmin != 0:
+        '''
+        def __init__(self, wmin=0.0, wmax=1.0, tauLTP=20.0, tauLTD=20.0, aLTP=0.01, aLTD=0.01, \
+                    dendritic_delay_fraction=1.0, weight=0.0, delay=None):
+        '''
+        if w_min != 0:
             raise Exception("Non-zero minimum weight is not supported by NEST.")
-        super(synapses.MultiplicativeWeightDependence, self).__init__(w_min=wmin, w_max=wmax)
-        super(synapses.SpikePairRule, self).__init__(tau_plus=tauLTP, tau_minus=tauLTD, A_plus=aLTP, A_minus=aLTD)
-        super(STDPMechanism, self).__init__(dendritic_delay_fraction=dendritic_delay_fraction, weight = weight, delay=delay)
+        '''
+        parameters = dict(locals())
+        parameters.pop('self')
+        super(SpikePairRule_, self).__init__(self, **parameters)
+
+
+        super(SpikePairRule_, self).__init__(w_min=wmin, w_max=wmax, tau_plus=tauLTP, tau_minus=tauLTD, A_plus=aLTP, A_minus=aLTD, \
+                        dendritic_delay_fraction=dendritic_delay_fraction, weight = weight, delay=delay)
+        '''
+        STDPMechanism.__init__(self, timing_dependence=None, weight_dependence=None, \
+                     voltage_dependence=None, dendritic_delay_fraction=dendritic_delay_fraction, weight = weight, delay=delay)
+
+        synapses.MultiplicativeWeightDependence.__init__(self, w_min=w_min, w_max=w_max)
+
+        synapses.SpikePairRule.__init__(self, tau_plus=tau_plus, tau_minus=tau_minus, A_plus=A_plus, A_minus=A_minus)
+        # synapses.SpikePairRule.__init__(self, tau_plus=tauLTP, tau_minus=tauLTD, A_plus=aLTP, A_minus=aLTD)

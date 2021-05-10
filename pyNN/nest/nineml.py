@@ -26,8 +26,8 @@ from datetime import datetime
 
 from pyNN.nest.cells import NativeCellType
 # from pyNN.models import BaseSynapseType
-# from pyNN.nest.synapses import NativeSynapseType
-from pyNN.nest.standardmodels.synapses import SpikePairRule_
+from pyNN.nest.synapses import NativeSynapseType
+# from pyNN.nest.standardmodels.synapses import SpikePairRule_
 from pyNN.nest.simulator import Connection
 
 logger = logging.getLogger("PyNN")
@@ -143,7 +143,7 @@ class _nest_build_nineml_celltype(type):
         return type.__new__(cls, name, bases, dct)
 
 
-class NineMLSynapseType(SpikePairRule_):
+class NineMLSynapseType(NativeSynapseType):
 
     connection_type = Connection
     presynaptic_type = None
@@ -183,7 +183,7 @@ class _nest_build_nineml_synapsetype(type):
         # Calculate attributes of the new class
         dct["default_parameters"] = {
             "weight": 0.0, "delay": None,
-            "dendritic_delay_fraction": 1.0
+            "dendritic_delay_fraction": 1.0,
         }
         dct["default_parameters"].update((param.name, 1.0) for param in model.parameters)
         dct["default_initial_values"] = dict((statevar.name, 0.0) for statevar in model.state_variables)

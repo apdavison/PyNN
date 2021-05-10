@@ -4,6 +4,7 @@
 CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbott.cpp.o
  /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src/StdpSongAbbott.cpp
  /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src/StdpSongAbbott.h
+ /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/simulators-source/NEST_install/nest-simulator-2.18.0/nestkernel/source.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/aggregatedatum.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/allocator.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/arraydatum.h
@@ -26,7 +27,6 @@ CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbott.cpp.o
  /home/pedroernesto/anaconda3/build/NEST/include/nest/dictdatum.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/dictutils.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/doubledatum.h
- /home/pedroernesto/anaconda3/build/NEST/include/nest/enum_bitfield.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/event.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/event_delivery_manager.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/exceptions.h
@@ -70,7 +70,6 @@ CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbott.cpp.o
  /home/pedroernesto/anaconda3/build/NEST/include/nest/node_manager.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/numericdatum.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/numerics.h
- /home/pedroernesto/anaconda3/build/NEST/include/nest/per_thread_bool_indicator.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/random_datums.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/random_numbers.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/randomdev.h
@@ -605,6 +604,7 @@ CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbottmodule.cpp.o
  /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src/StdpSongAbbott.h
  /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src/StdpSongAbbottmodule.cpp
  /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/TASKS_PyNN-branch-nineml/PyNN-branch-nineml_from-apdavisonGitHub/examples/NEST_nineml_models/StdpSongAbbott/src/StdpSongAbbottmodule.h
+ /home/pedroernesto/Documents/Project/Code/Models_RepresentationSharing/simulators-source/NEST_install/nest-simulator-2.18.0/nestkernel/source.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/aggregatedatum.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/allocator.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/arraydatum.h
@@ -632,7 +632,6 @@ CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbottmodule.cpp.o
  /home/pedroernesto/anaconda3/build/NEST/include/nest/dictutils.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/doubledatum.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/dynamicloader.h
- /home/pedroernesto/anaconda3/build/NEST/include/nest/enum_bitfield.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/event.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/event_delivery_manager.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/exceptions.h
@@ -680,7 +679,6 @@ CMakeFiles/StdpSongAbbottmodule_module.dir/StdpSongAbbottmodule.cpp.o
  /home/pedroernesto/anaconda3/build/NEST/include/nest/node_manager.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/numericdatum.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/numerics.h
- /home/pedroernesto/anaconda3/build/NEST/include/nest/per_thread_bool_indicator.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/random_datums.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/random_numbers.h
  /home/pedroernesto/anaconda3/build/NEST/include/nest/randomdev.h
