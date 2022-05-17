@@ -284,6 +284,15 @@ class SpikeSourceInhGamma(cells.SpikeSourceInhGamma):
     }
 
 
+class DeferredParameter:
+
+    def __init__(self, set_parameter):
+        self.set_parameter = set_parameter
+    
+    def __call__(self, min_delay):
+        self.set_parameter(min_delay)
+
+
 def adjust_spike_times_forward(spike_times):
     """
     Since this cell type requires parrot neurons, we have to adjust the

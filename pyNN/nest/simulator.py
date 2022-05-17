@@ -93,6 +93,7 @@ class _State(common.control.BaseState):
         self._time_offset = 0.0
         self.t_flush = -1
         self.stale_connection_cache = False
+        self._deferred_parameters = []
 
     @property
     def t(self):
@@ -178,6 +179,8 @@ class _State(common.control.BaseState):
 
     def run(self, simtime):
         """Advance the simulation for a certain time."""
+        #for item in self._deferred_parameters:
+        #    item.set(self.min_delay)
         for population in self.populations:
             if population._deferred_parrot_connections:
                 population._connect_parrot_neurons()
