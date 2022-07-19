@@ -65,6 +65,17 @@ class NestStandardCurrentSource(NestCurrentSource, StandardCurrentSource):
             corrected = max(corrected, 0.0)
         return corrected
 
+    def _reverse_delay_correction(self, value):
+        """
+        When we read-out parameters, we need to reverse the delay correction
+        """
+        # zero could represent both zero and small positive values
+        # so we can't always reverse correctly, but these should be
+        # edge cases
+        if value > 0:
+            uncorrected = value + self.min_delay
+        return uncorrected
+
     def _phase_correction(self, start, freq, phase):
         """
         Fixes #497 (PR #502)
@@ -132,8 +143,16 @@ class NestStandardCurrentSource(NestCurrentSource, StandardCurrentSource):
 
     def get_native_parameters(self):
         all_params = nest.GetStatus(self._device)[0]
-        return ParameterSpace(dict((k, v) for k, v in all_params.items()
-                                   if k in self.get_native_names()))
+        parameters = ParameterSpace(dict((k, v) for k, v in all_params.items()
+                                    if k in self.get_native_names()))
+        # todo: implement phase corrections
+        # todo: move this reversal of delay/phase corrections to reverse_translate
+        for key, value in parameters.items():
+            if key == "amplitude_times":
+                parameters["amplitude_times"] = self._reverse_delay_correction(parameters["amplitude_times"])
+            elif key in ("start", "stop"):
+                parameters[key] = self._reverse_delay_correction(parameters[key])
+        return parameters
 
 
 class DCSource(NestStandardCurrentSource, electrodes.DCSource):

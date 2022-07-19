@@ -583,14 +583,8 @@ def issue512(sim):
         # NEURON requires amplitudes in nanoamperes (nA)
         assert_true(step.amplitudes[0] == -0.5)
         assert_true(step.amplitudes[1] == 0.5)
-        # NEST and NEURON require time in ms
-        # But NEST has time stamps reduced by min_delay
-        if "pyNN.nest" in str(sim):
-            assert_true(abs(step.times[0]-0.3) < 1e-9)
-            assert_true(abs(step.times[1]-0.8) < 1e-9)
-        else:  # neuron
-            assert_true(abs(step.times[0]-0.4) < 1e-9)
-            assert_true(abs(step.times[1]-0.9) < 1e-9)
+        assert_true(abs(step.times[0]-0.4) < 1e-9)
+        assert_true(abs(step.times[1]-0.9) < 1e-9)
 
     # 2) dt = 0.01 ms, min_delay = 0.01 ms
     dt = 0.01
@@ -620,14 +614,8 @@ def issue512(sim):
         # NEURON requires amplitudes in nanoamperes (nA)
         assert_true(step.amplitudes[0] == -0.5)
         assert_true(step.amplitudes[1] == 0.5)
-        # NEST and NEURON require time in ms
-        # But NEST has time stamps reduced by min_delay
-        if "pyNN.nest" in str(sim):
-            assert_true(abs(step.times[0]-0.44) < 1e-9)
-            assert_true(abs(step.times[1]-0.85) < 1e-9)
-        else:  # neuron
-            assert_true(abs(step.times[0]-0.45) < 1e-9)
-            assert_true(abs(step.times[1]-0.86) < 1e-9)
+        assert_true(abs(step.times[0]-0.45) < 1e-9)
+        assert_true(abs(step.times[1]-0.86) < 1e-9)
 
 
 @register()
