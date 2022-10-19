@@ -30,6 +30,28 @@ class PopulationMixin(object):
 
     def _get_parameters(self, *names):
         """
+        Return a ParameterSpace containing PyNN parameters
+
+        `names` should be PyNN names
+        """
+        def _get_component_parameters(component, names):
+            if component.computed_parameters_include(names):
+                native_names = component.get_native_names()  # need all parameters in order to calculate values
+            else:
+                native_names = component.get_native_names(*names)
+
+            native_parameter_space = self._get_native_parameters(*native_names)
+            ps = component.reverse_translate(native_parameter_space)
+            return ps
+
+        if isinstance(self.celltype, StandardCellType):
+            parameter_space = _get_component_parameters(self.celltype, names)
+        else:
+            parameter_space = self._get_native_parameters(*names)
+        return parameter_space
+
+    def _get_native_parameters(self, *names):
+        """
         return a ParameterSpace containing native parameters
         """
         parameter_dict = {}

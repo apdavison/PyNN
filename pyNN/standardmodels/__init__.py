@@ -134,6 +134,9 @@ class StandardModelType(models.BaseModelType):
         more than one other parameter."""
         return [name for name in self.translations if name not in self.simple_parameters() + self.scaled_parameters()]
 
+    def computed_parameters_include(self, parameter_names):
+        return any(name in self.computed_parameters() for name in parameter_names)
+
     def get_native_names(self, *names):
         """
         Return a list of native parameter names for a given model.

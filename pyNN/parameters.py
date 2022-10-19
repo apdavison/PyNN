@@ -125,6 +125,9 @@ class ArrayParameter(object):
         """Return the maximum value."""
         return self.value.max()
 
+    def __getitem__(self, item):
+        return self.value[item]
+
     def __add__(self, val):
         """
         Return a new :class:`ArrayParameter` in which all values in the original
