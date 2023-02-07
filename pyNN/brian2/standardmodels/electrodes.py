@@ -293,10 +293,10 @@ class NoisyCurrentSource(StreamableCurrentSource, electrodes.NoisyCurrentSource)
                 self._brian_parameters["mean"]
                 + self._brian_parameters["stdev"] * np.random.randn()
             )
+            if self.recording:
+                self.recorded_times.append(time)
+                self.recorded_amplitudes.append(self._current_amplitude)
         self.j += 1
         if self.j == self.change_at:
             self.j = 0
-        if self.recording:
-            self.recorded_times.append(time)
-            self.recorded_amplitudes.append(self._current_amplitude)
         return self._current_amplitude

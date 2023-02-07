@@ -70,3 +70,4 @@ if options.plot_figure:
         title="Current injection example",
         annotations="Simulated with %s" % options.simulator.upper()
     ).save(figure_filename)
+    print(figure_filename)
