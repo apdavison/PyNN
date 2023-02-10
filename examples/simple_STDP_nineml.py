@@ -59,7 +59,7 @@ sim, options = get_simulator(("--plot-figure", "Plot the simulation results to a
                               {"action": "store_true"}),
                              ("--fit-curve", "Calculate the best-fit curve to the weight-delta_t measurements",
                               {"action": "store_true"}),
-                             ("--dendritic-delay-fraction", 
+                             ("--dendritic-delay-fraction",
                               "What fraction of the total transmission delay is due to dendritic propagation",
                               {"default": 1}),
                              ("--debug", "Print debugging information"))
@@ -148,7 +148,7 @@ MySTDP = sim.nineml_synapse_type('StdpSongAbbott', create_stdp_synapse())
 
 stdp_model = MySTDP(tauLTP=20.0, tauLTD=20.0,
                     aLTP=0.01, aLTD=0.012,
-                    wmin=0, wmax=0.0000001,
+                    wmax=0.0000001, wmin=0,
                     weight=0.00000005,
                     delay=delay,
                     dendritic_delay_fraction=float(options.dendritic_delay_fraction))

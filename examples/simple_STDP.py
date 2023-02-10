@@ -53,13 +53,9 @@ delay = 3.0              # (ms) synaptic time delay
 
 # === Configure the simulator ===============================================
 
-sim, options = get_simulator(("--plot-figure", "Plot the simulation results to a file",
-                              {"action": "store_true"}),
-                             ("--fit-curve", "Calculate the best-fit curve to the weight-delta_t measurements",
-                              {"action": "store_true"}),
-                             ("--dendritic-delay-fraction", 
-                              "What fraction of the total transmission delay is due to dendritic propagation",
-                              {"default": 1}),
+sim, options = get_simulator(("--plot-figure", "Plot the simulation results to a file", {"action": "store_true"}),
+                             ("--fit-curve", "Calculate the best-fit curve to the weight-delta_t measurements", {"action": "store_true"}),
+                             ("--dendritic-delay-fraction", "What fraction of the total transmission delay is due to dendritic propagation", {"default": 1}),
                              ("--debug", "Print debugging information"))
 
 if options.debug:
@@ -101,7 +97,6 @@ stdp_model = sim.STDPMechanism(
                 weight=0.00000005,
                 delay=delay,
                 dendritic_delay_fraction=float(options.dendritic_delay_fraction))
-print(stdp_model.possible_models)
 connections = sim.Projection(p1, p2, sim.AllToAllConnector(), stdp_model)
 
 # the connection weight from the driver neuron is very strong, to ensure the

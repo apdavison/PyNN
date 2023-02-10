@@ -6,6 +6,7 @@ Export of PyNN scripts as NineML.
 :license: CeCILL, see LICENSE for details.
 """
 
+from itertools import repeat, izip
 import nineml.user as nineml
 
 from pyNN import common

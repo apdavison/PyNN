@@ -4,7 +4,7 @@ Common implementation of ID, Population, PopulationView and Assembly classes.
 
 These base classes should be sub-classed by the backend-specific classes.
 
-:copyright: Copyright 2006-2016 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2020 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 """
 
@@ -23,6 +23,7 @@ from pyNN import random, recording, errors, standardmodels, core, space, descrip
 from pyNN.models import BaseCellType
 from pyNN.parameters import ParameterSpace, LazyArray, simplify as simplify_parameter_array
 from pyNN.recording import files
+
 
 deprecated = core.deprecated
 logger = logging.getLogger("PyNN")
@@ -229,9 +230,13 @@ class BasePopulation(object):
         return gen
 
     def _get_cell_initial_value(self, id, variable):
-        assert isinstance(self.initial_values[variable], LazyArray)
-        index = self.id_to_local_index(id)
-        return self.initial_values[variable][index]
+        if variable in self.initial_values:
+            assert isinstance(self.initial_values[variable], LazyArray)
+            index = self.id_to_local_index(id)
+            return self.initial_values[variable][index]
+        else:
+            logger.warning("Variable '{}' is not in initial values, returning 0.0".format(variable))
+            return 0.0
 
     def _set_cell_initial_value(self, id, variable, value):
         assert isinstance(self.initial_values[variable], LazyArray)
@@ -266,7 +271,7 @@ class BasePopulation(object):
         """
         Get the values of the given parameters for every local cell in the
         population, or, if gather=True, for all cells in the population.
-        
+
         Values will be expressed in the standard PyNN units (i.e. millivolts,
         nanoamps, milliseconds, microsiemens, nanofarads, event per second).
         """
@@ -295,7 +300,7 @@ class BasePopulation(object):
                 values = parameters[name]
                 if isinstance(values, numpy.ndarray):
                     all_values = {self._simulator.state.mpi_rank: values.tolist()}
-                    local_indices = numpy.arange(self.size)[self._mask_local].tolist()
+                    local_indices = numpy.arange(self.size,)[self._mask_local].tolist()
                     all_indices = {self._simulator.state.mpi_rank: local_indices}
                     all_values = recording.gather_dict(all_values)
                     all_indices = recording.gather_dict(all_indices)
@@ -418,6 +423,10 @@ class BasePopulation(object):
         """Determine whether `variable` can be recorded from this population."""
         return self.celltype.can_record(variable)
 
+    @property
+    def injectable(self):
+        return self.celltype.injectable
+
     def record(self, variables, to_file=None, sampling_interval=None):
         """
         Record the specified variable or variables for all cells in the
@@ -429,13 +438,13 @@ class BasePopulation(object):
 
         If specified, `to_file` should be either a filename or a Neo IO instance and `write_data()`
         will be automatically called when `end()` is called.
-        
+
         `sampling_interval` should be a value in milliseconds, and an integer
         multiple of the simulation timestep.
         """
         if variables is None:  # reset the list of things to record
-                              # note that if record(None) is called on a view of a population
-                              # recording will be reset for the entire population, not just the view
+                               # note that if record(None) is called on a view of a population
+                               # recording will be reset for the entire population, not just the view
             self.recorder.reset()
         else:
             logger.debug("%s.record('%s')", self.label, variables)
@@ -479,7 +488,7 @@ class BasePopulation(object):
         simulated on that node.
 
         If `clear` is True, recorded data will be deleted from the `Population`.
-        
+
         `annotations` should be a dict containing simple data types such as
         numbers and strings. The contents will be written into the output data
         file as metadata.
@@ -533,7 +542,7 @@ class BasePopulation(object):
     def get_spike_counts(self, gather=True):
         """
         Returns a dict containing the number of spikes for each neuron.
-        
+
         The dict keys are neuron IDs, not indices.
         """
         # arguably, we should use indices
@@ -822,7 +831,7 @@ class PopulationView(BasePopulation):
                     raise Exception("Boolean masks should have the size of Parent Population")
                 self.mask = numpy.arange(len(self.parent))[self.mask]
             if len(numpy.unique(self.mask)) != len(self.mask):
-                logging.warning("PopulationView can contain only once each ID, duplicated IDs are remove")
+                logging.warning("PopulationView can contain only once each ID, duplicated IDs are removed")
                 self.mask = numpy.unique(self.mask)
         self.all_cells = self.parent.all_cells[self.mask]  # do we need to ensure this is ordered?
         idx = numpy.argsort(self.all_cells)
@@ -915,6 +924,50 @@ class PopulationView(BasePopulation):
         else:
             return indices_in_parent
 
+    def index_from_parent_index(self, indices):
+        """
+        Given an index(indices) in the parent population, return
+        the index(indices) within this view.
+        """
+        # todo: add check that all indices correspond to cells that are in this view
+        if isinstance(self.mask, slice):
+            start = self.mask.start or 0
+            step = self.mask.step or 1
+            return (indices - start) / step
+        else:
+            if isinstance(indices, int):
+                return np.nonzero(self.mask == indices)[0][0]
+            elif isinstance(indices, numpy.ndarray):
+                # Lots of ways to do this. Some profiling is in order.
+                # - https://stackoverflow.com/questions/16992713/translate-every-element-in-numpy-array-according-to-key
+                # - https://stackoverflow.com/questions/3403973/fast-replacement-of-values-in-a-numpy-array
+                # - https://stackoverflow.com/questions/13572448/replace-values-of-a-numpy-index-array-with-values-of-a-list
+                parent_indices = self.mask  # assert mask is sorted
+                view_indices = numpy.arange(self.size)
+                index = numpy.digitize(indices, parent_indices, right=True)
+                return view_indices[index]
+            else:
+                raise ValueError("indices must be an integer or an array of integers")
+
+    def __eq__(self, other):
+        """
+        Determine whether two views are the same.
+        """
+        return not self.__ne__(other)
+
+    def __ne__(self, other):
+        """
+        Determine whether two views are different.
+        """
+        # We can't use the self.mask, as different masks can select the same cells
+        # (e.g. slices vs arrays), therefore we have to use self.all_cells
+        if isinstance(other, PopulationView):
+            return self.parent != other.parent or not numpy.array_equal(self.all_cells, other.all_cells)
+        elif isinstance(other, Population):
+            return self.parent != other or not numpy.array_equal(self.all_cells, other.all_cells)
+        else:
+            return True
+
     def describe(self, template='populationview_default.txt', engine='default'):
         """
         Returns a human-readable description of the population view.
@@ -962,6 +1015,7 @@ class Assembly(object):
             self._insert(p)
         self.label = kwargs.get('label', 'assembly%d' % Assembly._count)
         assert isinstance(self.label, basestring), "label must be a string or unicode"
+        self.annotations = {}
         Assembly._count += 1
 
     def __repr__(self):
@@ -1031,11 +1085,12 @@ class Assembly(object):
         Return a list of receptor types that are common to all populations
         within the assembly.
         """
-        rts = set(self.populations[0].celltype.receptor_types)
+        rts = self.populations[0].celltype.receptor_types
         if len(self.populations) > 1:
+            rts = set(rts)
             for p in self.populations[1:]:
                 rts = rts.intersection(set(p.celltype.receptor_types))
-        return rts
+        return list(rts)
 
     def find_units(self, variable):
         """
@@ -1135,7 +1190,7 @@ class Assembly(object):
             pindex = boundaries[1:].searchsorted(index, side='right')
             return self.populations[pindex][index - boundaries[pindex]]
         elif isinstance(index, (slice, tuple, list, numpy.ndarray)):
-            if isinstance(index, slice):
+            if isinstance(index, slice) or (hasattr(index, "dtype") and index.dtype == bool):
                 indices = numpy.arange(self.size)[index]
             else:
                 indices = numpy.array(index)
@@ -1425,6 +1480,10 @@ class Assembly(object):
         for p in self.populations:
             current_source.inject_into(p)
 
+    @property
+    def injectable(self):
+        return all(p.injectable for p in self.populations)
+
     def describe(self, template='assembly_default.txt', engine='default'):
         """
         Returns a human-readable description of the assembly.
@@ -1438,3 +1497,23 @@ class Assembly(object):
         context = {"label": self.label,
                    "populations": [p.describe(template=None) for p in self.populations]}
         return descriptions.render(engine, template, context)
+
+    def get_annotations(self, annotation_keys, simplify=True):
+        """
+        Get the values of the given annotations for each population in the Assembly.
+        """
+        if isinstance(annotation_keys, basestring):
+            annotation_keys = (annotation_keys,)
+        annotations = defaultdict(list)
+
+        for key in annotation_keys:
+            is_array_annotation = False
+            for p in self.populations:
+                annotation = p.annotations[key]
+                annotations[key].append(annotation)
+                is_array_annotation = isinstance(annotation, numpy.ndarray)
+            if is_array_annotation:
+                annotations[key] = numpy.hstack(annotations[key])
+            if simplify:
+                annotations[key] = simplify_parameter_array(numpy.array(annotations[key]))
+        return annotations
