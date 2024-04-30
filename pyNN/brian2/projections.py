@@ -1,6 +1,8 @@
-# encoding: utf-8
 """
+Brian 2 implementation of Projection
 
+:copyright: Copyright 2006-2024 by the PyNN team, see AUTHORS.
+:license: CeCILL, see LICENSE for details.
 """
 
 import logging
@@ -8,12 +10,12 @@ from itertools import chain
 from collections import defaultdict
 import numpy as np
 import brian2
-from brian2 import uS, nA, mV, ms, second
-from pyNN import common
-from pyNN.standardmodels.synapses import TsodyksMarkramSynapse
-from pyNN.core import is_listlike
-from pyNN.parameters import ParameterSpace, simplify
-from pyNN.space import Space
+from brian2 import uS, nA, mV, ms
+from .. import common
+from ..standardmodels.synapses import TsodyksMarkramSynapse
+from ..core import is_listlike
+from ..parameters import ParameterSpace
+from ..space import Space
 from . import simulator
 from .standardmodels.synapses import StaticSynapse
 
@@ -112,7 +114,10 @@ class Projection(common.Projection):
                 # complete the synapse type equations according to the
                 # post-synaptic response type
                 psv = post.celltype.post_synaptic_variables[self.receptor_type]
-                if hasattr(post.celltype, "voltage_based_synapses") and post.celltype.voltage_based_synapses:
+                if (
+                    hasattr(post.celltype, "voltage_based_synapses")
+                    and post.celltype.voltage_based_synapses
+                ):
                     weight_units = mV
                 else:
                     weight_units = post.celltype.conductance_based and uS or nA
@@ -164,10 +169,15 @@ class Projection(common.Projection):
         if isinstance(self.pre, common.Assembly):
             boundaries = np.cumsum([0] + [p.size for p in self.pre.populations])
             assert indices.max() < boundaries[-1]
-            partitions = np.split(indices, np.searchsorted(
-                indices, boundaries[1:-1])) - boundaries[:-1]
+            split_points = np.searchsorted(indices, boundaries[1:-1])
+            partitions = np.split(indices, split_points)
+            # partitions is now a list of arrays containing the assembly indices
+            for partition, first_index in zip(partitions, boundaries[:-1]):
+                # we now transform the assembly indices into local indices
+                partition -= first_index
             for i_group, local_indices in enumerate(partitions):
                 if isinstance(self.pre.populations[i_group], common.PopulationView):
+                    # for views, we replace view indices with population indices
                     partitions[i_group] = self.pre.populations[i_group].index_in_grandparent(
                         local_indices)
         elif isinstance(self.pre, common.PopulationView):
@@ -192,7 +202,10 @@ class Projection(common.Projection):
             return 0, index
 
     def _convergent_connect(self, presynaptic_indices, postsynaptic_index,
+                            location_selector=None,
                             **connection_parameters):
+        if location_selector is not None:
+            raise NotImplementedError("Brian backend does not support multicompartmental models.")
         connection_parameters.pop("dendritic_delay_fraction", None)  # TODO: need to to handle this
         presynaptic_index_partitions = self._partition(presynaptic_indices)
         j_group, j = self._localize_index(postsynaptic_index)
@@ -222,10 +235,12 @@ class Projection(common.Projection):
                             except TypeError as err:
                                 if "read-only" in str(err):
                                     logger.info(
-                                        "Cannot set synaptic initial value for variable {}".format(name))
+                                        f"Cannot set synaptic initial value for variable {name}")
                                 else:
                                     raise
-                    # brian2_var[i, j] = value  # doesn't work with multiple connections between a given neuron pair. Need to understand the internals of Synapses and SynapticVariable better
+                    # brian2_var[i, j] = value
+                    # ^ doesn't work with multiple connections between a given neuron pair.
+                    #   Need to understand the internals of Synapses and SynapticVariable better
 
     def _set_attributes(self, connection_parameters):
         if isinstance(self.post, common.Assembly) or isinstance(self.pre, common.Assembly):
@@ -288,7 +303,8 @@ class Projection(common.Projection):
                 value = getattr(syn_obj, name)[:]
                 # should really use the translated name
                 native_ps = ParameterSpace({name: value}, shape=value.shape)
-                # this whole "get attributes" thing needs refactoring in all backends to properly use translation
+                # todo: this whole "get attributes" thing needs refactoring
+                #       in all backends to properly use translation
                 ps = self.synapse_type.reverse_translate(native_ps)
                 ps.evaluate()
                 value = ps[name]

@@ -1,10 +1,7 @@
 # encoding: utf-8
 
 import os
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock
+from unittest.mock import Mock
 try:
     from neuron import h
     import pyNN.neuron as sim
@@ -15,6 +12,7 @@ except ImportError:
     h = Mock()
 
 from pyNN.common import populations
+from pyNN.recording import Variable
 import unittest
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
@@ -246,8 +244,8 @@ class TestPopulation(unittest.TestCase):
                                                       'cm': lambda i: 0.987 + 0.01 * i,
                                                       'i_offset': np.array([-0.21, -0.20, -0.19, -0.18])}))
 
-    def test__get_parameters(self):
-        ps = self.p._get_parameters('c_m', 'tau_m', 'e_e', 'i_offset')
+    def test__get_native_parameters(self):
+        ps = self.p._get_native_parameters('c_m', 'tau_m', 'e_e', 'i_offset')
         ps.evaluate(simplify=True)
         assert_array_almost_equal(ps['c_m'], np.array([0.987, 0.997, 1.007, 1.017], float),
                                   decimal=12)
@@ -285,7 +283,8 @@ class TestConnection(unittest.TestCase):
     def setUp(self):
         self.pre = 0
         self.post = 1
-        self.c = simulator.Connection(MockProjection(), self.pre, self.post,
+        mock_cell = MockCell()
+        self.c = simulator.Connection(MockProjection(), self.pre, self.post, mock_cell, mock_cell.excitatory,
                                       weight=0.123, delay=0.321)
 
     def test_create(self):
@@ -371,9 +370,9 @@ class TestRecorder(unittest.TestCase):
         pass
 
     def test__record(self):
-        self.rec._record('v', self.cells)
-        self.rec._record('gsyn_inh', self.cells)
-        self.rec._record('spikes', self.cells)
+        self.rec._record(Variable('v', None, label=None), self.cells)
+        self.rec._record(Variable('gsyn_inh', None, label=None), self.cells)
+        self.rec._record(Variable('spikes', None, label=None), self.cells)
         self.assertRaises(Exception, self.rec._record, self.cells)
 
     # def test__get_v(self):
@@ -388,11 +387,11 @@ class TestRecorder(unittest.TestCase):
     #                        np.vstack((self.cells[0]._cell.vtrace, self.cells[1]._cell.vtrace)).T)
 
     def test__get_spikes(self):
-        self.rec.recorded['spikes'] = self.cells
+        self.rec.recorded[Variable('spikes', None, label=None)] = self.cells
         self.cells[0]._cell.spike_times.from_python(np.arange(101.0, 111.0))
         self.cells[1]._cell.spike_times.from_python(np.arange(13.0, 23.0))
         simulator.state.t = 111.0
-        sdata = self.rec._get_current_segment(variables=['spikes'], filter_ids=None)
+        sdata = self.rec._get_current_segment(variables=[Variable(location=None, name='spikes', label=None)], filter_ids=None)
         self.assertEqual(len(sdata.spiketrains), 2)
         assert_array_equal(np.array(sdata.spiketrains[0]), self.cells[0]._cell.spike_times.as_numpy())
 
@@ -415,10 +414,10 @@ class TestRecorder(unittest.TestCase):
     #                        cell._cell.gsyn_trace['inhibitory'])
     #
     def test__local_count(self):
-        self.rec.recorded['spikes'] = self.cells
+        self.rec.recorded[Variable('spikes', None, label=None)] = self.cells
         self.cells[0]._cell.spike_times = h.Vector(np.arange(101.0, 111.0))
         self.cells[1]._cell.spike_times = h.Vector(np.arange(13.0, 33.0))
-        self.assertEqual(self.rec._local_count('spikes', filter_ids=None),
+        self.assertEqual(self.rec._local_count(Variable('spikes', location=None, label=None), filter_ids=None),
                          {self.cells[0]: 10, self.cells[1]: 20})
 
 
@@ -426,13 +425,13 @@ class TestRecorder(unittest.TestCase):
 class TestStandardIF(unittest.TestCase):
 
     def test_create_cond_exp(self):
-        cell = cells.StandardIF("conductance", "exp", tau_m=12.3, c_m=0.246, v_rest=-67.8)
+        cell = cells.StandardIFStandardReceptors("conductance", "exp", tau_m=12.3, c_m=0.246, v_rest=-67.8)
         self.assertAlmostEqual(cell.area(), 1e5, places=10)  # µm²
         self.assertEqual(cell(0.5).cm, 0.246)
         self.assertEqual(cell(0.5).pas.g, 2e-5)
 
     def test_get_attributes(self):
-        cell = cells.StandardIF("conductance", "exp", tau_m=12.3, c_m=0.246, v_rest=-67.8)
+        cell = cells.StandardIFStandardReceptors("conductance", "exp", tau_m=12.3, c_m=0.246, v_rest=-67.8)
         self.assertAlmostEqual(cell.tau_m, 12.3, places=10)
         self.assertAlmostEqual(cell.c_m, 0.246, places=10)
 

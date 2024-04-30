@@ -1,7 +1,7 @@
 from itertools import repeat
-from pyNN import common
-from pyNN.core import ezip
-from pyNN.space import Space
+from .. import common
+from ..core import ezip
+from ..space import Space
 from . import simulator
 
 
@@ -45,7 +45,10 @@ class Projection(common.Projection):
         raise NotImplementedError
 
     def _convergent_connect(self, presynaptic_indices, postsynaptic_index,
+                            location_selector=None,
                             **connection_parameters):
+        if location_selector is not None:
+            raise NotImplementedError("mock backend does not support multicompartmental models.")
         for name, value in connection_parameters.items():
             if isinstance(value, float):
                 connection_parameters[name] = repeat(value)

@@ -15,17 +15,20 @@ Attributes:
 All other functions and classes are private, and should not be used by other
 modules.
 
-:copyright: Copyright 2006-2022 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2024 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 """
 
-import nest
+import os.path
 import logging
 import tempfile
 import warnings
 import numpy as np
-from pyNN import common
-from pyNN.core import reraise
+
+import nest
+
+from .. import common
+from ..core import reraise, find, run_command
 
 logger = logging.getLogger("PyNN")
 name = "NEST"  # for use in annotating output data
@@ -37,6 +40,57 @@ name = "NEST"  # for use in annotating output data
 #       in case they are used with PyNN as "native" models.
 NEST_VARIABLES_TIME_DIMENSION = ("start", "stop")
 NEST_ARRAY_VARIABLES_TIME_DIMENSION = ("spike_times", "amplitude_times", "rate_times")
+
+
+# --- Building extensions ------------------------------------------------------
+
+def build_extensions(build_dir=None):
+    nest_config = find("nest-config")
+    if not nest_config:
+        warnings.warn("Cannot find nest-config, please check your PATH. Unable to build extensions.")
+        return
+
+    logger.debug("nest-config found at", nest_config)
+
+    build_dirs = []
+    if build_dir is not None:
+        build_dirs.append(build_dir)
+    # if a specific build directory is not provided,
+    # first try to build within the pyNN source dir
+    build_dirs.append(os.path.join(os.path.dirname(__file__), "_build"))
+    # if that directory is not writable, build in the current working directory
+    build_dirs.append(os.path.join(os.getcwd(), "_build", "nest_extensions"))
+
+    for nest_build_dir in build_dirs:
+        try:
+            os.makedirs(nest_build_dir, exist_ok=True)
+        except OSError:
+            continue
+        if os.access(nest_build_dir, os.W_OK):
+            break
+
+    if not os.access(nest_build_dir, os.W_OK):
+        warnings.warn("Cannot create build directory for nest extensions")
+        return
+
+    source_dir = os.path.join(os.path.dirname(__file__), "extensions")
+    result, stdout = run_command(f"cmake -Dwith-nest={nest_config} {source_dir}",
+                                 nest_build_dir)
+    if result != 0:
+        err_msg = "\n  ".join(stdout)
+        warnings.warn(f"Problem running cmake. Output was:\n  {err_msg}")
+    else:
+        result, stdout = run_command("make", nest_build_dir)
+        if result != 0:
+            err_msg = "\n  ".join(stdout)
+            warnings.warn(f"Unable to compile NEST extensions. Output was:\n  {err_msg}")
+        else:
+            result, stdout = run_command("make install", nest_build_dir)
+            if result != 0:
+                err_msg = "\n  ".join(stdout)
+                warnings.warn(f"Unable to install NEST extensions. Output was:\n  {err_msg}")
+            else:
+                logger.info("Successfully compiled NEST extensions.")
 
 
 # --- For implementation of get_time_step() and similar functions --------------
@@ -72,18 +126,24 @@ class _State(common.control.BaseState):
     """Represent the simulator state."""
 
     def __init__(self):
-        super(_State, self).__init__()
+        super().__init__()
         try:
             nest.Install('pynn_extensions')
             self.extensions_loaded = True
-        except nest.NESTError as err:
-            self.extensions_loaded = False
+        except nest.NESTError:
+            build_extensions()
+            try:
+                nest.Install('pynn_extensions')
+                self.extensions_loaded = True
+            except nest.NESTError:
+                self.extensions_loaded = False
         self.initialized = False
         self.optimize = False
         self.spike_precision = "off_grid"
         self.verbosity = "error"
-        self._cache_num_processes = nest.GetKernelStatus()['num_processes']  # avoids blocking if only some nodes call num_processes
-                                                                             # do the same for rank?
+        # the following line avoids blocking if only some nodes call num_processes
+        # do the same for rank?
+        self._cache_num_processes = nest.GetKernelStatus()['num_processes']
         # allow NEST to erase previously written files (defaut with all the other simulators)
         nest.SetKernelStatus({'overwrite_files': True})
         self.tempdirs = []
@@ -142,7 +202,8 @@ class _State(common.control.BaseState):
 
     def _set_spike_precision(self, precision):
         if nest.off_grid_spiking and precision == "on_grid":
-            raise ValueError("The option to use off-grid spiking cannot be turned off once enabled")
+            raise ValueError(
+                "The option to use off-grid spiking cannot be turned off once enabled")
         if precision == 'off_grid':
             self.default_recording_precision = 15
         elif precision == 'on_grid':
@@ -186,7 +247,8 @@ class _State(common.control.BaseState):
                 device.connect_to_cells()
                 device._local_files_merged = False
         if not self.running and simtime > 0:
-            # we simulate past the real time by one min_delay, otherwise NEST doesn't give us all the recorded data
+            # we simulate past the real time by one min_delay,
+            # otherwise NEST doesn't give us all the recorded data
             simtime += self.min_delay
             self.running = True
         if simtime > 0:
@@ -313,7 +375,9 @@ class Connection(common.Connection):
         """Synaptic weight in nA or µS."""
         w_nA = nest.GetStatus(self.id(), 'weight')[0]
         if self.parent.synapse_type == 'inhibitory' and common.is_conductance(self.target):
-            w_nA *= -1  # NEST uses negative values for inhibitory weights, even if these are conductances
+            # NEST uses negative values for inhibitory weights,
+            # even if these are conductances
+            w_nA *= -1
         return 0.001 * w_nA
 
     def _set_delay(self, d):

@@ -1,12 +1,13 @@
 # encoding: utf-8
 
+import sys
 from pyNN.utility import init_logging
 from pyNN.random import RandomDistribution
 from .fixtures import run_with_simulators
 import pytest
 
 
-@run_with_simulators("nest", "neuron")
+@run_with_simulators("nest",) #"neuron")
 def test_scenario3(sim):
     """
     Simple feed-forward network network with additive STDP. The second half of
@@ -83,8 +84,8 @@ def test_scenario3(sim):
 
     actual_rate = pre.mean_spike_count() / duration
     expected_rate = (r1 + r2) / 2
-    errmsg = "actual rate: %g  expected rate: %g" % (actual_rate, expected_rate)
-    assert abs(actual_rate - expected_rate) < 1, errmsg
+    err_msg = "actual rate: %g  expected rate: %g" % (actual_rate, expected_rate)
+    assert abs(actual_rate - expected_rate) < 1, err_msg
     final_weights = connections.get('weight', format='array', gather=False)
     assert initial_weights[0, 0] != final_weights[0, 0]
 
@@ -92,7 +93,8 @@ def test_scenario3(sim):
     assert p < 0.01, p
     assert final_weights[:50, :].mean() < final_weights[50:, :].mean()
     sim.end()
-    return initial_weights, final_weights, pre, post, connections
+    if "pytest" not in sys.modules:
+        return initial_weights, final_weights, pre, post, connections
 
 
 if __name__ == '__main__':

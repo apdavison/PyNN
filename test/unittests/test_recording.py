@@ -4,8 +4,9 @@ from collections import defaultdict
 from unittest.mock import Mock
 import pytest
 
+import neo
 from pyNN import recording, errors
-
+from pyNN.recording import Variable
 
 # def test_rename_existing():
 
@@ -60,7 +61,25 @@ class MockRecorder(recording.Recorder):
     def _get_current_segment(self, filter_ids=None, variables='all', clear=False):
         segment = Mock()
         segment.analogsignals = [Mock(), Mock()]
+        segment.proxy_for = neo.Segment
         return segment
+
+    def _localize_variables(self, variables, locations):
+        # If variables is a single string, encapsulate it in a list.
+        if isinstance(variables, str) and variables != 'all':
+            variables = [variables]
+        if isinstance(locations, str):
+            locations = [locations]
+        resolved_variables = []
+
+        if locations is None:
+            for var_path in variables:
+                resolved_variables.append(recording.Variable(location=None, name=var_path, label=None))
+        else:
+            raise NotImplementedError
+
+        return resolved_variables
+
 
 
 class MockPopulation(object):
@@ -74,7 +93,7 @@ class MockPopulation(object):
     def __len__(self):
         return self.size
 
-    def can_record(self, variable):
+    def can_record(self, variable, location=None):
         if variable in ["spikes", "v", "gsyn_exc", "gsyn_inh", "spam"]:
             return True
         else:
@@ -127,38 +146,40 @@ def test_record():
     p = MockPopulation()
     r = MockRecorder(p)
     r._record = Mock()
+    spam_var = Variable(location=None, name='spam', label=None)
     assert r.recorded == defaultdict(set)
 
     all_ids = (MockID(0, True), MockID(1, False), MockID(
         2, True), MockID(3, True), MockID(4, False))
     first_ids = all_ids[0:3]
     r.record('spam', first_ids)
-    assert r.recorded['spam'] == set(id for id in first_ids if id.local)
-    assert len(r.recorded['spam']) == 2
-    r._record.assert_called_with('spam', r.recorded['spam'], None)
+    assert r.recorded[spam_var] == set(id for id in first_ids if id.local)
+    assert len(r.recorded[spam_var]) == 2
+    r._record.assert_called_with(spam_var, r.recorded[spam_var], None)
 
     more_ids = all_ids[2:5]
     r.record('spam', more_ids)
-    assert r.recorded['spam'] == set(id for id in all_ids if id.local)
-    assert len(r.recorded['spam']) == 3
-    r._record.assert_called_with('spam', set(all_ids[3:4]), None)
+    assert r.recorded[spam_var] == set(id for id in all_ids if id.local)
+    assert len(r.recorded[spam_var]) == 3
+    r._record.assert_called_with(spam_var, set(all_ids[3:4]), None)
 
 
 def test_filter_recorded():
     p = MockPopulation()
     r = MockRecorder(p)
     r._record = Mock()
-    all_ids = (MockID(0, True), MockID(1, False), MockID(
-        2, True), MockID(3, True), MockID(4, False))
+    spam_var = Variable(location=None, name='spam', label=None)
+    spikes_var = Variable(location=None, name='spikes', label=None)
+    all_ids = (MockID(0, True), MockID(1, False), MockID(2, True), MockID(3, True), MockID(4, False))
     r.record(['spikes', 'spam'], all_ids)
-    assert r.recorded['spikes'] == set(id for id in all_ids if id.local)
-    assert r.recorded['spam'] == set(id for id in all_ids if id.local)
+    assert r.recorded[spikes_var] == set(id for id in all_ids if id.local)
+    assert r.recorded[spam_var] == set(id for id in all_ids if id.local)
 
     filter = all_ids[::2]
-    filtered_ids = r.filter_recorded('spam', filter)
+    filtered_ids = r.filter_recorded(spam_var, filter)
     assert filtered_ids == set(id for id in filter if id.local)
 
-    assert r.filter_recorded('spikes', None) == r.recorded['spikes']
+    assert r.filter_recorded(spikes_var, None) == r.recorded[spikes_var]
 
 
 def test_get():

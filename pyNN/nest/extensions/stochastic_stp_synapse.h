@@ -1,7 +1,7 @@
 /*
  *  stochastic_stp_synapse.h
  *
- *  :copyright: Copyright 2006-2022 by the PyNN team, see AUTHORS.
+ *  :copyright: Copyright 2006-2024 by the PyNN team, see AUTHORS.
  *  :license: CeCILL, see LICENSE for details.
  *
  */
@@ -67,6 +67,10 @@ public:
   typedef nest::CommonSynapseProperties CommonPropertiesType;
   typedef nest::Connection< targetidentifierT > ConnectionBase;
 
+  static constexpr nest::ConnectionModelProperties properties = nest::ConnectionModelProperties::HAS_DELAY
+    | nest::ConnectionModelProperties::IS_PRIMARY | nest::ConnectionModelProperties::SUPPORTS_HPC
+    | nest::ConnectionModelProperties::SUPPORTS_LBL;
+
   /**
    * Default Constructor.
    * Sets default values for all parameters. Needed by GenericConnectorModel.
@@ -102,7 +106,7 @@ public:
    * \param e The event to send
    * \param cp Common properties to all synapses (empty).
    */
-  void send( nest::Event& e, nest::thread t, const CommonPropertiesType& cp );
+  bool send( nest::Event& e, size_t t, const CommonPropertiesType& cp );
 
   class ConnTestDummyNode : public nest::ConnTestDummyNodeBase
   {
@@ -110,17 +114,17 @@ public:
     // Ensure proper overriding of overloaded virtual functions.
     // Return values from functions are ignored.
     using nest::ConnTestDummyNodeBase::handles_test_event;
-    nest::port
-    handles_test_event( nest::SpikeEvent&, nest::rport )
+    size_t
+    handles_test_event( nest::SpikeEvent&, size_t )
     {
-      return nest::invalid_port_;
+      return nest::invalid_port;
     }
   };
 
   void
   check_connection( nest::Node& s,
     nest::Node& t,
-    nest::rport receptor_type,
+    size_t receptor_type,
     const CommonPropertiesType& )
   {
     ConnTestDummyNode dummy_target;
@@ -144,6 +148,8 @@ private:
   double t_lastspike_; //!< Time point of last spike emitted
 };
 
+template < typename targetidentifierT >
+constexpr nest::ConnectionModelProperties stochastic_stp_synapse< targetidentifierT >::properties;
 
 /**
  * Send an event to the receiver of this connection.
@@ -153,9 +159,9 @@ private:
  * \param cp Common properties object, containing the stochastic_stp parameters.
  */
 template < typename targetidentifierT >
-inline void
+inline bool
 stochastic_stp_synapse< targetidentifierT >::send( nest::Event& e,
-  nest::thread thr,
+  size_t thr,
   const CommonPropertiesType& )
 {
 
@@ -206,6 +212,7 @@ stochastic_stp_synapse< targetidentifierT >::send( nest::Event& e,
   }
 
   t_lastspike_ = t_spike;
+  return release;
 }
 
 } // namespace

@@ -2,15 +2,15 @@
 """
 Definition of NativeCellType class for NEST.
 
-:copyright: Copyright 2006-2022 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2024 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 """
 
 import warnings
 import numpy as np
 import nest
-from pyNN.models import BaseCellType
-from pyNN.parameters import Sequence
+from ..models import BaseCellType
+from ..parameters import Sequence
 from . import conversion
 
 UNITS_MAP = {
@@ -43,7 +43,7 @@ def get_defaults(model_name):
             if isinstance(value, valid_types):
                 default_params[name] = conversion.make_pynn_compatible(value)
             else:
-                warnings.warn("Ignoring parameter '%s' since PyNN does not support %s" %
+                warnings.warn("Ignoring default NEST parameter '%s' since PyNN parameteres cannot be of type %s" %
                               (name, type(value)))
     return default_params, default_initial_values
 
@@ -55,7 +55,7 @@ def get_receptor_types(model_name):
 def get_recordables(model_name):
     try:
         return [name for name in nest.GetDefaults(model_name, "recordables")]
-    except nest.NESTError as err:
+    except nest.NESTError:
         return []
 
 

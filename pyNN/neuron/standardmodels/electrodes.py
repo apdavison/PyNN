@@ -7,16 +7,19 @@ Classes:
     NoisyCurrentSource -- a Gaussian whitish noise current.
     ACSource           -- a sine modulated current.
 
-:copyright: Copyright 2006-2022 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2024 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 
 """
 
+from collections import defaultdict
 from neuron import h
 import numpy as np
 from pyNN.standardmodels import electrodes, build_translations, StandardCurrentSource
 from pyNN.parameters import ParameterSpace, Sequence
+from pyNN.morphology import MorphologyFilter, LocationGenerator
 from pyNN.neuron import simulator
+from ..morphology import LabelledLocations
 
 
 class NeuronCurrentSource(StandardCurrentSource):
@@ -27,7 +30,7 @@ class NeuronCurrentSource(StandardCurrentSource):
         self.cell_list = []
         self._amplitudes = None
         self._times = None
-        self._h_iclamps = {}
+        self._h_iclamps = defaultdict(list)
         parameter_space = ParameterSpace(self.default_parameters,
                                          self.get_schema(),
                                          shape=(1,))
@@ -59,8 +62,9 @@ class NeuronCurrentSource(StandardCurrentSource):
             self._amplitudes = None
             self._times = None
             self._generate()
-        for iclamp in self._h_iclamps.values():
-            self._update_iclamp(iclamp, 0.0)    # send tstop = 0.0 on _reset()
+        for cell_iclamps in self._h_iclamps.values():
+            for iclamp in cell_iclamps:
+                self._update_iclamp(iclamp, 0.0)    # send tstop = 0.0 on _reset()
 
     def _update_iclamp(self, iclamp, tstop):
         if not self._is_playable:
@@ -120,7 +124,8 @@ class NeuronCurrentSource(StandardCurrentSource):
                     step_times, step_amplitudes, simulator.state.dt)
                 parameters["times"].value = step_times
                 parameters["amplitudes"].value = step_amplitudes
-            if isinstance(value, Sequence):  # this shouldn't be necessary, but seems to prevent a segfault
+            if isinstance(value, Sequence):
+                # this shouldn't be necessary, but seems to prevent a segfault
                 value = value.value
             object.__setattr__(self, name, value)
         self._reset()
@@ -128,16 +133,31 @@ class NeuronCurrentSource(StandardCurrentSource):
     def get_native_parameters(self):
         return ParameterSpace(dict((k, self.__getattribute__(k)) for k in self.get_native_names()))
 
-    def inject_into(self, cells):
-        __doc__ = StandardCurrentSource.inject_into.__doc__
+    def inject_into(self, cells, location=None):
         for id in cells:
             if id.local:
                 if not id.celltype.injectable:
                     raise TypeError("Can't inject current into a spike source.")
-                if not (id in self._h_iclamps):
+                if location is None:
+                    sections = [(id._cell.source_section, 0.5)]
+                else:
+                    if isinstance(location, str):
+                        location = LabelledLocations(location)
+                    elif isinstance(location, LocationGenerator):
+                        pass
+                    else:
+                        raise TypeError("location must be a string or a LocationGenerator")
+                    morphology = cells.celltype.parameter_space["morphology"].base_value  # todo: evaluate lazyarray
+                    locations = location.generate_locations(morphology, label_prefix="dc_current_source", cell=id._cell)
+                    sections = []
+                    for loc in locations:
+                        cell_location = id._cell.locations[loc]
+                        sections.append((cell_location.section, cell_location.position))
+                if not (id in self._h_iclamps):  # to modify for multi-compartment cells with multiple injection points
                     self.cell_list += [id]
-                    self._h_iclamps[id] = h.IClamp(0.5, sec=id._cell.source_section)
-                    self._devices.append(self._h_iclamps[id])
+                    for (sec, position) in sections:
+                        self._h_iclamps[id].append(h.IClamp(position, sec=sec))
+                    self._devices.extend(self._h_iclamps[id])
 
     def record(self):
         self.itrace = h.Vector()
@@ -211,10 +231,14 @@ class ACSource(NeuronCurrentSource, electrodes.ACSource):
     def _generate(self):
         # Not efficient at all... Is there a way to have those vectors computed on the fly ?
         # Otherwise should have a buffer mechanism
-        temp_num_t = int(round(((self.stop + simulator.state.dt) - self.start) / simulator.state.dt))
+        temp_num_t = int(round(
+            ((self.stop + simulator.state.dt) - self.start) / simulator.state.dt
+        ))
         tmp = simulator.state.dt * np.arange(temp_num_t)
         self.times = tmp + self.start
-        self.amplitudes = self.offset + self.amplitude * np.sin(tmp * 2 * np.pi * self.frequency / 1000. + 2 * np.pi * self.phase / 360)
+        self.amplitudes = self.offset + self.amplitude * np.sin(
+            tmp * 2 * np.pi * self.frequency / 1000. + 2 * np.pi * self.phase / 360
+        )
         self.amplitudes[-1] = 0.0
 
 

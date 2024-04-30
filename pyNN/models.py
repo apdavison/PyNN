@@ -2,12 +2,12 @@
 Base classes for cell and synapse models, whether "standard" (cross-simulator)
 or "native" (restricted to an individual simulator).
 
-:copyright: Copyright 2006-2022 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2024 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 """
 
-from pyNN import descriptions
-from pyNN.parameters import ParameterSpace
+from . import descriptions
+from .parameters import ParameterSpace
 
 
 class BaseModelType(object):
@@ -22,7 +22,8 @@ class BaseModelType(object):
         """
         self.parameter_space = ParameterSpace(self.default_parameters,
                                               self.get_schema(),
-                                              shape=None)
+                                              shape=None,
+                                              component=self.__class__)
         if parameters:
             self.parameter_space.update(**parameters)
 
@@ -62,7 +63,8 @@ class BaseModelType(object):
             "name": self.__class__.__name__,
             "default_parameters": self.default_parameters,
             "default_initial_values": self.default_initial_values,
-            "parameters": self.parameter_space._parameters,  # should add a describe() method to ParameterSpace
+            "parameters": self.parameter_space._parameters,
+            # should add a describe() method to ParameterSpace
         }
         return descriptions.render(engine, template, context)
 
@@ -74,8 +76,31 @@ class BaseCellType(BaseModelType):
     conductance_based = True  # override for cells with current-based synapses
     injectable = True  # override for spike sources
 
-    def can_record(self, variable):
-        return variable in self.recordable
+    def can_record(self, variable, location=None):
+        if location is None:
+            return variable in self.recordable
+        else:
+            return False
+
+
+class BaseIonChannelModel(BaseModelType):
+    """Base class for ion channel models."""
+    pass
+
+
+class BasePostSynapticResponseModel(BaseModelType):
+    """Base class for post-synaptic response models."""
+    pass
+
+
+class BaseCellTypeComponent(BaseModelType):
+    """docstring needed"""
+    pass
+
+
+class BasePostSynapticResponse(BaseModelType):
+    """docstring needed"""
+    pass
 
 
 class BaseCurrentSource(BaseModelType):
@@ -88,7 +113,8 @@ class BaseSynapseType(BaseModelType):
 
     # override to specify a non-standard connection type (i.e. GapJunctions)
     connection_type = None
-    has_presynaptic_components = False  # override for synapses that include an active presynaptic components
+    # override for synapses that include an active presynaptic components
+    has_presynaptic_components = False
 
     def __init__(self, **parameters):
         """

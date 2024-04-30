@@ -1,11 +1,10 @@
 """
 Export of PyNN scripts as NineML.
 
-:copyright: Copyright 2006-2013 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2024 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 """
 
-import numpy as np
 from pyNN import recording
 from . import simulator
 

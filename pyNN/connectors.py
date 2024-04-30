@@ -4,25 +4,26 @@ Defines a common implementation of the built-in PyNN Connector classes.
 Simulator modules may use these directly, or may implement their own versions
 for improved performance.
 
-:copyright: Copyright 2006-2022 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2024 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 """
 
-from pyNN.random import RandomDistribution, AbstractRNG, NumpyRNG, get_mpi_config
-from pyNN.core import IndexBasedExpression
-from pyNN import errors, descriptions
-from pyNN.recording import files
-from pyNN.parameters import LazyArray
-from pyNN.standardmodels import StandardSynapseType
+from .random import RandomDistribution, AbstractRNG, NumpyRNG
+from .core import IndexBasedExpression
+from . import errors, descriptions
+from .recording import files
+from .parameters import LazyArray
+from .standardmodels import StandardSynapseType
 import numpy as np
 from itertools import repeat
 import logging
 from copy import copy, deepcopy
 
+# the following imports are for use within eval()
 from lazyarray import arccos, arcsin, arctan, arctan2, ceil, cos, cosh, exp, \
     fabs, floor, fmod, hypot, ldexp, log, log10, modf, power, \
-    sin, sinh, sqrt, tan, tanh, maximum, minimum
-from numpy import e, pi
+    sin, sinh, sqrt, tan, tanh, maximum, minimum  # noqa: F401
+from numpy import e, pi  # noqa: F401
 
 try:
     import csa
@@ -47,6 +48,8 @@ class Connector(object):
     Base class for connectors.
 
     All connector sub-classes have the following optional keyword arguments:
+        `location_selector`:
+            TO DO
         `safe`:
             if True, check that weights and delays have valid values. If False,
             this check is skipped.
@@ -55,12 +58,13 @@ class Connector(object):
             connection routine. An example would be `progress_bar.set_level`.
     """
 
-    def __init__(self, safe=True, callback=None):
+    def __init__(self, location_selector=None, safe=True, callback=None):
         """
         docstring needed
         """
         self.safe = safe
         self.callback = callback
+        self.location_selector = location_selector
         if callback is not None:
             assert callable(callback)
 
@@ -128,8 +132,8 @@ class Connector(object):
 class MapConnector(Connector):
     """
     Abstract base class for Connectors based on connection maps, where a map is a 2D lazy array
-    containing either the (boolean) connectivity matrix (aka adjacency matrix, connection set mask, etc.)
-    or the values of a synaptic connection parameter.
+    containing either the (boolean) connectivity matrix (aka adjacency matrix, connection set
+    mask, etc.) or the values of a synaptic connection parameter.
     """
 
     def _standard_connect(self, projection, connection_map_generator, distance_map=None):
@@ -178,14 +182,16 @@ class MapConnector(Connector):
 
         parameter_space = self._parameters_from_synapse_type(projection, distance_map)
 
-        # Loop over columns of the connection_map array (equivalent to looping over post-synaptic neurons)
+        # Loop over columns of the connection_map array
+        # (equivalent to looping over post-synaptic neurons)
         for count, (col, postsynaptic_index, local, source_mask) in enumerate(zip(*components)):
             # `col`: column index
             # `postsynaptic_index`: index of the post-synaptic neuron
             # `local`: boolean - does the post-synaptic neuron exist on this MPI node
-            # `source_mask`: boolean numpy array, indicating which of the pre-synaptic neurons should be connected to,
-            #                or a single boolean, meaning connect to all/none of the pre-synaptic neurons
-            #                It can also be an array of addresses
+            # `source_mask`: boolean numpy array, indicating which of the pre-synaptic neurons
+            #                should be connected to, or a single boolean, meaning connect to
+            #                all/none of the pre-synaptic neurons.
+            #                It can also be an array of addresses.
             _proceed = False
             if source_mask is True or source_mask.any():
                 _proceed = True
@@ -212,25 +218,26 @@ class MapConnector(Connector):
 
                 # Check that parameter values are valid
                 if self.safe:
-                    # it might be cheaper to do the weight and delay check before evaluating the larray,
-                    # however this is challenging to do if the base value is a function or if there are
-                    # a lot of operations, so for simplicity we do the check after evaluation
+                    # it might be cheaper to do the weight and delay check before evaluating the
+                    # larray, however this is challenging to do if the base value is a function or
+                    # if there are a lot of operations, so for simplicity we do the check after
+                    # evaluation
                     syn = projection.synapse_type
                     if hasattr(syn, "parameter_checks"):
-                        #raise Exception(f"{connection_parameters} {syn.parameter_checks}")
                         for parameter_name, check in syn.parameter_checks.items():
-                            native_parameter_name = syn.translations[parameter_name]["translated_name"]
-                            # note that for delays we should also apply units scaling to the check values
-                            # since this currently only affects Brian we can probably handle that separately
-                            # (for weights the checks are all based on zero)
+                            native_parameter_name = syn.translations[parameter_name]["translated_name"]  # noqa:E501
+                            # note that for delays we should also apply units scaling to the check
+                            # values, since this currently only affects Brian we can probably
+                            # handle that separately (for weights, checks are all based on zero)
                             if native_parameter_name in connection_parameters:
                                 check(connection_parameters[native_parameter_name], projection)
 
                 if local:
                     # Connect the neurons
-                    #logger.debug("Connecting to %d from %s" % (postsynaptic_index, source_mask))
                     projection._convergent_connect(
-                        source_mask, postsynaptic_index, **connection_parameters)
+                        source_mask, postsynaptic_index,
+                        location_selector=self.location_selector,
+                        **connection_parameters)
                     if self.callback:
                         self.callback(count / projection.post.local_size)
 
@@ -243,7 +250,8 @@ class MapConnector(Connector):
             `projection`:
                 the `Projection` that is being created.
             `connection_map`:
-                a boolean `LazyArray` of the same shape as `projection`, representing the connectivity matrix.
+                a boolean `LazyArray` of the same shape as `projection`,
+                representing the connectivity matrix.
             `distance_map`:
                 TODO
         """
@@ -261,7 +269,7 @@ class MapConnector(Connector):
             # this could be optimized by checking parent or component populations
             # but should handle both views and assemblies
             a = np.broadcast_to(projection.pre.all_cells,
-                                   (projection.post.size, projection.pre.size)).T
+                                (projection.post.size, projection.pre.size)).T
             b = projection.post.all_cells
             connection_map = LazyArray(a != b, shape=projection.shape)
         return connection_map
@@ -292,12 +300,13 @@ class AllToAllConnector(MapConnector):
     """
     parameter_names = ('allow_self_connections',)
 
-    def __init__(self, allow_self_connections=True, safe=True,
-                 callback=None):
+    def __init__(self, allow_self_connections=True,
+                 location_selector=None,
+                 safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe, callback)
+        Connector.__init__(self, location_selector, safe, callback)
         assert isinstance(allow_self_connections, bool)
         self.allow_self_connections = allow_self_connections
 
@@ -331,11 +340,12 @@ class FixedProbabilityConnector(MapConnector):
     parameter_names = ('allow_self_connections', 'p_connect')
 
     def __init__(self, p_connect, allow_self_connections=True,
+                 location_selector=None,
                  rng=None, safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe, callback)
+        Connector.__init__(self, location_selector, safe, callback)
         assert isinstance(allow_self_connections, bool) or allow_self_connections == 'NoMutual'
         self.allow_self_connections = allow_self_connections
         self.p_connect = float(p_connect)
@@ -375,18 +385,19 @@ class DistanceDependentProbabilityConnector(MapConnector):
     parameter_names = ('allow_self_connections', 'd_expression')
 
     def __init__(self, d_expression, allow_self_connections=True,
+                 location_selector=None,
                  rng=None, safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe, callback)
+        Connector.__init__(self, location_selector, safe, callback)
         assert isinstance(d_expression, str) or callable(d_expression)
         assert isinstance(allow_self_connections, bool) or allow_self_connections == 'NoMutual'
         try:
             if isinstance(d_expression, str):
-                d = 0
+                d = 0     # noqa: F841  (`d` is used in eval)
                 assert 0 <= eval(d_expression), eval(d_expression)
-                d = 1e12
+                d = 1e12  # noqa: F841
                 assert 0 <= eval(d_expression), eval(d_expression)
         except ZeroDivisionError as err:
             raise ZeroDivisionError("Error in the distance expression %s. %s" %
@@ -432,11 +443,12 @@ class IndexBasedProbabilityConnector(MapConnector):
     parameter_names = ('allow_self_connections', 'index_expression')
 
     def __init__(self, index_expression, allow_self_connections=True,
+                 location_selector=None,
                  rng=None, safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe, callback)
+        Connector.__init__(self, location_selector, safe, callback)
         assert callable(index_expression)
         assert isinstance(index_expression, IndexBasedExpression)
         assert isinstance(allow_self_connections, bool) or allow_self_connections == 'NoMutual'
@@ -491,8 +503,8 @@ class DisplacementDependentProbabilityConnector(IndexBasedProbabilityConnector):
 
         def __init__(self, disp_function):
             """
-            `disp_function`: a function that takes a 3xN numpy displacement matrix and maps each row
-                             (displacement) to a probability between 0 and 1
+            `disp_function`: a function that takes a 3xN numpy displacement matrix and maps each
+                             row (displacement) to a probability between 0 and 1
             """
             self._disp_function = disp_function
 
@@ -501,6 +513,7 @@ class DisplacementDependentProbabilityConnector(IndexBasedProbabilityConnector):
             return self._disp_function(disp)
 
     def __init__(self, disp_function, allow_self_connections=True,
+                 location_selector=None,
                  rng=None, safe=True, callback=None):
         super(DisplacementDependentProbabilityConnector, self).__init__(
             self.DisplacementExpression(disp_function),
@@ -531,11 +544,12 @@ class FromListConnector(Connector):
     """
     parameter_names = ('conn_list',)
 
-    def __init__(self, conn_list, column_names=None, safe=True, callback=None):
+    def __init__(self, conn_list, column_names=None,
+                 location_selector=None, safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe=safe, callback=callback)
+        Connector.__init__(self, location_selector, safe=safe, callback=callback)
         self.conn_list = np.array(conn_list)
         if len(conn_list) > 0:
             n_columns = self.conn_list.shape[1]
@@ -549,8 +563,8 @@ class FromListConnector(Connector):
             else:
                 self.column_names = column_names
                 if n_columns != len(self.column_names) + 2:
-                    raise ValueError("connection list has %d parameter columns, but %d column names provided." % (
-                        n_columns - 2, len(self.column_names)))
+                    raise ValueError(f"connection list has {n_columns - 2} parameter columns, "
+                                     f"but {len(self.column_names)} column names provided.")
         else:
             self.column_names = ()
 
@@ -572,8 +586,8 @@ class FromListConnector(Connector):
         idx = np.argsort(self.conn_list[:, 1])
         targets = np.unique(self.conn_list[:, 1]).astype(int)
         local = np.in1d(targets,
-                           np.arange(projection.post.size)[projection.post._mask_local],
-                           assume_unique=True)
+                        np.arange(projection.post.size)[projection.post._mask_local],
+                        assume_unique=True)
         local_targets = targets[local]
         self.conn_list = self.conn_list[idx]
         left = np.searchsorted(self.conn_list[:, 1], local_targets, 'left')
@@ -596,7 +610,9 @@ class FromListConnector(Connector):
                 connection_parameters = projection.synapse_type.translate(
                     connection_parameters)
             connection_parameters.evaluate()
-            projection._convergent_connect(sources, tgt, **connection_parameters)
+            projection._convergent_connect(sources, tgt,
+                                           location_selector=self.location_selector,
+                                           **connection_parameters)
 
 
 class FromFileConnector(FromListConnector):
@@ -626,11 +642,12 @@ class FromFileConnector(FromListConnector):
     """
     parameter_names = ('file', 'distributed')
 
-    def __init__(self, file, distributed=False, safe=True, callback=None):
+    def __init__(self, file, distributed=False,
+                 location_selector=None, safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe=safe, callback=callback)
+        Connector.__init__(self, location_selector, safe=safe, callback=callback)
         if isinstance(file, str):
             file = files.StandardTextFile(file, mode='r')
         self.file = file
@@ -654,11 +671,12 @@ class FixedNumberConnector(MapConnector):
     parameter_names = ('allow_self_connections', 'n')
 
     def __init__(self, n, allow_self_connections=True, with_replacement=False,
+                 location_selector=None,
                  rng=None, safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe, callback)
+        Connector.__init__(self, location_selector, safe, callback)
         assert isinstance(allow_self_connections, bool) or allow_self_connections == 'NoMutual'
         self.allow_self_connections = allow_self_connections
         self.with_replacement = with_replacement
@@ -667,8 +685,8 @@ class FixedNumberConnector(MapConnector):
             assert n >= 0
         elif isinstance(n, RandomDistribution):
             # weak check that the random distribution is ok
-            assert np.all(np.array(n.next(100)) >=
-                             0), "the random distribution produces negative numbers"
+            err_msg = "the random distribution produces negative numbers"
+            assert np.all(np.array(n.next(100)) >= 0), err_msg
         else:
             raise TypeError("n must be an integer or a RandomDistribution object")
         self.rng = _get_rng(rng)
@@ -929,11 +947,12 @@ class SmallWorldConnector(Connector):
     parameter_names = ('allow_self_connections', 'degree', 'rewiring', 'n_connections')
 
     def __init__(self, degree, rewiring, allow_self_connections=True,
-                 n_connections=None, rng=None, safe=True, callback=None):
+                 n_connections=None, location_selector=None,
+                 rng=None, safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe, callback)
+        Connector.__init__(self, location_selector, safe, callback)
         assert 0 <= rewiring <= 1
         assert isinstance(allow_self_connections, bool) or allow_self_connections == 'NoMutual'
         self.rewiring = rewiring
@@ -960,10 +979,10 @@ class CSAConnector(MapConnector):
     parameter_names = ('cset',)
 
     if haveCSA:
-        def __init__(self, cset, safe=True, callback=None):
+        def __init__(self, cset, location_selector=None, safe=True, callback=None):
             """
             """
-            Connector.__init__(self, safe=safe, callback=callback)
+            Connector.__init__(self, location_selector, safe=safe, callback=callback)
             self.cset = cset
             arity = csa.arity(cset)
             assert arity in (0, 2), 'must specify mask or connection-set with arity 0 or 2'
@@ -980,8 +999,9 @@ class CSAConnector(MapConnector):
         if csa.arity(self.cset) == 2:
             # Connection-set with arity 2
             for (i, j, weight, delay) in c:
-                projection._convergent_connect(
-                    [projection.pre[i]], projection.post[j], weight, delay)
+                projection._convergent_connect([projection.pre[i]], projection.post[j],
+                                               location_selector=self.location_selector,
+                                               weight=weight, delay=delay)
         elif csa.arity(self.cset) == 0:
             # inefficient implementation as a starting point
             connection_map = np.zeros((projection.pre.size, projection.post.size), dtype=bool)
@@ -1004,20 +1024,21 @@ class CloneConnector(MapConnector):
 
         `reference_projection` -- the projection to clone the connectivity pattern from
         """
-        MapConnector.__init__(self, safe, callback=callback)
+        MapConnector.__init__(self, location_selector=None,
+                              safe=safe, callback=callback)
         self.reference_projection = reference_projection
 
     def connect(self, projection):
         if (projection.pre != self.reference_projection.pre or
                 projection.post != self.reference_projection.post):
-            raise errors.ConnectionError("Pre and post populations must match between reference ({0}"
-                                         "  and {1}) and clone projections ({2} and {3}) for "
-                                         "CloneConnector"
-                                         .format(self.reference_projection.pre,
-                                                 self.reference_projection.post,
-                                                 projection.pre, projection.post))
+            raise errors.ConnectionError(
+                "Pre and post populations must match between reference ({0}"
+                " and {1}) and clone projections ({2} and {3}) for CloneConnector".format(
+                    self.reference_projection.pre,
+                    self.reference_projection.post,
+                    projection.pre, projection.post))
         connection_map = LazyArray(~np.isnan(self.reference_projection.get(['weight'], 'array',
-                                                                              gather='all')[0]))
+                                                                           gather='all')[0]))
         self._connect_with_map(projection, connection_map)
 
 
@@ -1029,11 +1050,11 @@ class ArrayConnector(MapConnector):
     """
     parameter_names = ('array',)
 
-    def __init__(self, array, safe=True, callback=None):
+    def __init__(self, array, location_selector=None, safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe, callback)
+        Connector.__init__(self, location_selector, safe, callback)
         self.array = array
 
     def connect(self, projection):
@@ -1045,11 +1066,12 @@ class FixedTotalNumberConnector(FixedNumberConnector):
     parameter_names = ('allow_self_connections', 'n')
 
     def __init__(self, n, allow_self_connections=True, with_replacement=True,
+                 location_selector=None,
                  rng=None, safe=True, callback=None):
         """
         Create a new connector.
         """
-        Connector.__init__(self, safe, callback)
+        Connector.__init__(self, location_selector, safe, callback)
         assert isinstance(allow_self_connections, bool) or allow_self_connections == 'NoMutual'
         self.allow_self_connections = allow_self_connections
         self.with_replacement = with_replacement
@@ -1058,8 +1080,8 @@ class FixedTotalNumberConnector(FixedNumberConnector):
             assert n >= 0
         elif isinstance(n, RandomDistribution):
             # weak check that the random distribution is ok
-            assert np.all(np.array(n.next(100)) >=
-                             0), "the random distribution produces negative numbers"
+            err_msg = "the random distribution produces negative numbers"
+            assert np.all(np.array(n.next(100)) >= 0), err_msg
         else:
             raise TypeError("n must be an integer or a RandomDistribution object")
         self.rng = _get_rng(rng)

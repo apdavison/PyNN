@@ -6,14 +6,13 @@ formatting. If you need to produce more complex and/or publication-quality
 figures, it will probably be easier to use matplotlib or another plotting
 package directly rather than trying to extend this module.
 
-:copyright: Copyright 2006-2022 by the PyNN team, see AUTHORS.
+:copyright: Copyright 2006-2024 by the PyNN team, see AUTHORS.
 :license: CeCILL, see LICENSE for details.
 
 """
 
 import sys
 from collections import defaultdict
-from numbers import Number
 from itertools import repeat
 from os import path, makedirs
 import matplotlib.pyplot as plt
@@ -105,7 +104,7 @@ def plot_spiketrains(ax, spiketrains, label='', **options):
     """
     Plot all spike trains in a Segment in a raster plot.
     """
-    ax.set_xlim(spiketrains[0].t_start, spiketrains[0].t_stop / ms)
+    ax.set_xlim(spiketrains[0].t_start, spiketrains[0].t_stop)
     handle_options(ax, options)
     max_index = 0
     min_index = sys.maxsize
@@ -127,12 +126,12 @@ def plot_spiketrainlist(ax, spiketrains, label='', **options):
     """
     Plot all spike trains in a Segment in a raster plot.
     """
-    ax.set_xlim(spiketrains.t_start, spiketrains.t_stop / ms)
+    ax.set_xlim(spiketrains.t_start, spiketrains.t_stop)
     handle_options(ax, options)
     channel_ids, spike_times = spiketrains.multiplexed
     max_id = max(spiketrains.all_channel_ids)
     min_id = min(spiketrains.all_channel_ids)
-    ax.plot(channel_ids, spike_times, 'k.', **options)
+    ax.plot(spike_times, channel_ids, 'k.', **options)
     ax.set_ylabel("Neuron index")
     ax.set_ylim(-0.5 + min_id, max_id + 0.5)
     if label:
@@ -393,3 +392,16 @@ class Histogram(object):
 def isi_histogram(segment):
     all_isis = np.concatenate([np.diff(np.array(st)) for st in segment.spiketrains])
     return Histogram(all_isis)
+
+
+def connection_plot(projection, positive="O", zero=".", empty=" ", spacer=""):
+    """Produce a simple text-based representation of a connectivity matrix"""
+    connection_array = projection.get("weight", format="array")
+    image = np.zeros_like(connection_array, dtype=str)
+    # ignore the complaint that x > 0 is invalid for NaN
+    old_settings = np.seterr(invalid="ignore")
+    image[connection_array > 0] = positive
+    image[connection_array == 0] = zero
+    np.seterr(**old_settings)  # restore original floating point error settings
+    image[np.isnan(connection_array)] = empty
+    return "\n".join([spacer.join(row) for row in image])
