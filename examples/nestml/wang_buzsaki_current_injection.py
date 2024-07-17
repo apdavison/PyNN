@@ -10,7 +10,7 @@ or you can install NESTML directly:
   $ pip install nestml
 
 
-Usage: python nestml_example.py [-h] [--plot-figure] simulator
+Usage: python wang_buzsaki_current_injection.py [-h] [--plot-figure] simulator
 
 positional arguments:
   simulator      nest or spinnaker

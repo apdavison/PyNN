@@ -38,18 +38,21 @@ def nestml_cell_type(name, nestml_description):
     if os.path.exists(nestml_description):
         # description is a file path
         input_path = nestml_description
+        have_tmpdir = False
     else:
         # assume description is a string containing nestml code
         input_path = tempfile.mkdtemp()
         with open(os.path.join(input_path, "tmp.nestml"), "w") as fp:
             fp.write(nestml_description)
+        have_tmpdir = True
     generate_nest_target(
         input_path=input_path,
         target_path=None,  # "/tmp/nestml_target",
         install_path=None,
         module_name=module_name,
     )
-    shutil.rmtree(input_path)
+    if have_tmpdir:
+        shutil.rmtree(input_path)
 
     nest.Install(module_name)
 
