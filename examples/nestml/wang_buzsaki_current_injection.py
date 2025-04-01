@@ -48,7 +48,7 @@ sim.setup(timestep=0.01, min_delay=1.0)
 # note that the NESTML definition can also be stored in a separate file
 
 nestml_description = """
-neuron wb_cond_exp:
+model wb_cond_exp:
     state:
         r integer = 0 # number of steps in the current refractory phase
 
