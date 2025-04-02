@@ -89,7 +89,7 @@ class axon(base_morphology.axon):
             raise Exception("No neurites labelled as axon")
 
 
-class soma(base_morphology.axon):
+class soma(base_morphology.soma):
 
     def __call__(self, morphology, filter_by_section=False):
         if SectionType.soma in morphology.section_groups:
@@ -242,7 +242,7 @@ class centre(base_morphology.centre, HasSelector):
         section_index = self.selector(morphology)
         section_id = section_index[len(section_index)//2]
         section = cell.sections[section_id]
-        location_label = "centre"  # todo: add a part coming from selector
+        location_label = f"{self.selector.__class__.__name__}.centre"
         if label_prefix:
             location_label = f"{label_prefix}-{location_label}"
         cell.locations[location_label] = Location(section, section_id, 0.5, label=location_label)

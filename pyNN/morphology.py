@@ -178,6 +178,7 @@ class NeuriteDistribution(object):
         self.absence = absence
 
 
+
 class IonChannelDistribution(NeuriteDistribution):
     pass
 
@@ -242,6 +243,12 @@ class basal_dendrites(MorphologyFilter):
 
 
 class axon(MorphologyFilter):
+
+    def __init__(self, fraction_along=None):
+        self.fraction_along = fraction_along
+
+
+class soma(MorphologyFilter):
 
     def __init__(self, fraction_along=None):
         self.fraction_along = fraction_along
